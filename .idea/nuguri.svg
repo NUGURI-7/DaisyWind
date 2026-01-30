@@ -1,0 +1,39 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- 左耳 -->
+  <ellipse cx="30" cy="25" rx="12" ry="15" fill="#4A4A4A"/>
+  <ellipse cx="30" cy="27" rx="7" ry="9" fill="#FFE4C4"/>
+
+  <!-- 右耳 -->
+  <ellipse cx="70" cy="25" rx="12" ry="15" fill="#4A4A4A"/>
+  <ellipse cx="70" cy="27" rx="7" ry="9" fill="#FFE4C4"/>
+
+  <!-- 头部 -->
+  <circle cx="50" cy="45" r="28" fill="#8B7355"/>
+
+  <!-- 左眼眶 -->
+  <ellipse cx="38" cy="42" rx="8" ry="10" fill="#2C2C2C"/>
+  <circle cx="38" cy="43" r="4" fill="#FFFFFF"/>
+  <circle cx="39" cy="42" r="2" fill="#000000"/>
+
+  <!-- 右眼眶 -->
+  <ellipse cx="62" cy="42" rx="8" ry="10" fill="#2C2C2C"/>
+  <circle cx="62" cy="43" r="4" fill="#FFFFFF"/>
+  <circle cx="63" cy="42" r="2" fill="#000000"/>
+
+  <!-- 鼻子区域 -->
+  <ellipse cx="50" cy="52" rx="10" ry="8" fill="#F5DEB3"/>
+
+  <!-- 鼻子 -->
+  <ellipse cx="50" cy="54" rx="4" ry="3" fill="#2C2C2C"/>
+
+  <!-- 嘴巴 -->
+  <path d="M 50 54 Q 45 58 42 56" stroke="#2C2C2C" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M 50 54 Q 55 58 58 56" stroke="#2C2C2C" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+  <!-- 身体 -->
+  <ellipse cx="50" cy="80" rx="22" ry="18" fill="#8B7355"/>
+
+  <!-- 尾巴条纹提示 -->
+  <path d="M 72 75 Q 82 70 85 65" stroke="#4A4A4A" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M 72 75 Q 82 70 85 65" stroke="#D2B48C" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="6,4"/>
+</svg>
