@@ -8,6 +8,7 @@
 from typing import Optional
 from redis import asyncio as aioredis
 from redis.asyncio import ConnectionPool
+from starlette.requests import Request
 
 from config import settings
 
@@ -24,9 +25,9 @@ class RedisClient:
         """初始化redis连接池和客户端"""
 
         self._pool = ConnectionPool.from_url(
-            settings.REDIS_HOST,
+            settings.redis_url,
             max_connections=settings.REDIS_MAX_CONNECTIONS,
-            decode_response=True
+            decode_responses=True
         )
 
         self._client = aioredis.Redis(connection_pool=self._pool)
@@ -56,17 +57,17 @@ class RedisClient:
 redis_client = RedisClient()
 
 
-async def get_redis() -> aioredis.Redis:
+async def get_redis(request: Request) -> aioredis.Redis:
     """
-    FastAPI 依赖注入函数
+    FastAPI 依赖注入函数（从 app.state 获取）
 
     用法：
     from backend.app.core.redis import get_redis
     from fastapi import Depends
 
     @router.get("/test")
-    async def test(redis: Redis = Depends(get_redis)):
+    async def test(redis: aioredis.Redis = Depends(get_redis)):
         await redis.set("key", "value")
     """
-    return redis_client.client
+    return request.app.state.redis.client
 

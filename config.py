@@ -18,18 +18,32 @@ class Settings(BaseSettings):
     STATIC_DIR: str = "static"
 
     # ==================== Redis 配置 ====================
-    REDIS_HOST: str
+    REDIS_HOST: str = "127.0.0.1"
     REDIS_PORT: int = 6379
-    REDIS_PASSWORD: str
+    REDIS_PASSWORD: str = 123456
     REDIS_DB: int = 0
     REDIS_MAX_CONNECTIONS: int = 10
 
     @property
     def redis_url(self) -> str:
         if self.REDIS_PASSWORD:
-            return  f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}"
+            return f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
         else:
             return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+
+    # ==================== MySQL 配置 ====================
+    MYSQL_HOST: str = "localhost"
+    MYSQL_PORT: int = 3306
+    MYSQL_USER: str = "root"
+    MYSQL_PASSWORD: str = ""
+    MYSQL_DATABASE: str = "windify"
+    MYSQL_POOL_MIN_SIZE: int = 1
+    MYSQL_POOL_MAX_SIZE: int = 10
+    MYSQL_ECHO: bool = False
+
+    @property
+    def mysql_url(self) -> str:
+        return f"mysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}"
 
     # 配置模型设置
     model_config = SettingsConfigDict(
@@ -38,8 +52,6 @@ class Settings(BaseSettings):
         case_sensitive=True,
         extra="ignore"
     )
-
-
 
 
 # 创建全局配置实例
