@@ -45,8 +45,9 @@ class MySQLClient:
         try:
             await Tortoise.init(config=TORTOISE_CONFIG)
 
-            if settings.DEBUG_MODE:
-                await Tortoise.generate_schemas()
+            # if settings.DEBUG_MODE:
+            #     await Tortoise.generate_schemas()
+            # ❌ 注释掉自动建表（改用 Aerich）
             self._initialized=True
             print("✅ MySQL 连接成功")
         except Exception as e:

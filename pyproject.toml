@@ -5,7 +5,15 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "aerich>=0.9.2",
     "fastapi[all]>=0.128.0",
+    "passlib[argon2,bcrypt,totp]>=1.7.4",
     "redis>=6.2.0",
-    "tortoise-orm[aiomysqo,asyncmy]==0.22.2",
+    "tortoise-orm[asyncmy]==0.22.2",
+    "uuid-utils>=0.14.0",
 ]
+
+[tool.aerich]
+tortoise_orm = "backend.app.db.mysql.TORTOISE_CONFIG"
+location = "./migrations"
+src_folder = "./."
