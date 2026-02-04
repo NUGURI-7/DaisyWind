@@ -6,11 +6,13 @@ import type { RouteRecordRaw } from "vue-router";
 export const routes: Array<RouteRecordRaw> = [
     {
         path: '/',
+        name: 'home',
+        redirect: 'chat',
         component: ()=> import('@/layout/AppLayout.vue'),
         children: [
             {
-                path: 'home',
-                component: ()=> import('@/views/home-page/index.vue')
+                path: 'chat',
+                component: ()=> import('@/views/chat/index.vue')
             },
         ]
     }

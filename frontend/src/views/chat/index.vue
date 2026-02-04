@@ -3,4 +3,6 @@
     <Chat></Chat>
   </div>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Chat from '@/components/chat/index.vue'
+</script>

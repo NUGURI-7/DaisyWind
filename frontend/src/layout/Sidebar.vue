@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64"
+    class="flex min-h-full flex-col items-start bg-base-300 is-drawer-close:w-14 is-drawer-open:w-64"
   >
     <div
       class="w-full flex items-center justify-between p-2 is-drawer-close:flex-col is-drawer-close:items-center is-drawer-close:gap-2"
@@ -69,7 +69,54 @@
         </button>
       </li>
     </ul>
+    <!-- 主题切换器 - 展开时显示 -->
+    <div class="w-full p-2 is-drawer-close:hidden">
+      <select v-model="theme" class="select select-bordered w-full select-sm">
+        <option disabled>选择主题</option>
+        <option v-for="t in themes" :key="t" :value="t">
+          {{ t }}
+        </option>
+      </select>
+    </div>
+
+    <!-- 主题切换器 - 收起时显示 -->
+    <div class="is-drawer-open:hidden p-2 w-full">
+      <div class="dropdown dropdown-right w-full">
+        <label
+          tabindex="0"
+          class="btn btn-square btn-ghost btn-sm w-full tooltip tooltip-right"
+          data-tip="主题"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            class="size-4"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+            />
+          </svg>
+        </label>
+        <ul
+          tabindex="0"
+          class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 max-h-96 overflow-y-auto z-50"
+        >
+          <li v-for="t in themes" :key="t">
+            <a @click="setTheme(t)" :class="{ active: theme === t }">{{ t }}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { userTheme } from '@/composables/useTheme'
+
+const { theme, setTheme, themes } = userTheme()
+</script>
