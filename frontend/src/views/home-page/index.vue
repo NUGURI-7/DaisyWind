@@ -1,246 +1,105 @@
 <template>
-  <ul class="list bg-base-100 rounded-box shadow-md">
-    <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Most played songs this week</li>
+  <div class="drawer lg:drawer-open">
+    <input id="my-drawer-4" type="checkbox" class="drawer-toggle" checked />
+    <div class="drawer-side is-drawer-close:overflow-visible">
+      <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
+      <div
+        class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-14 is-drawer-open:w-64"
+      >
+        <div
+          class="w-full flex items-center justify-between p-2 is-drawer-close:flex-col is-drawer-open:items-center is-drawer-close:gap-2"
+        >
+          <img src="/raccoon-pa.svg" class="w-16" alt="daisyUI logo" />
+          <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
+            <!-- Sidebar toggle icon -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              stroke-width="2"
+              fill="none"
+              stroke="currentColor"
+              class="my-1.5 inline-block size-4"
+            >
+              <path
+                d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"
+              ></path>
+              <path d="M9 4v16"></path>
+              <path d="M14 10l2 2l-2 2"></path>
+            </svg>
+          </label>
+        </div>
 
-    <li class="list-row">
-      <div>
-        <img
-          class="size-10 rounded-box"
-          src="https://img.daisyui.com/images/profile/demo/1@94.webp"
-        />
-      </div>
-      <div>
-        <div>Dio Lupa</div>
-        <div class="text-xs uppercase font-semibold opacity-60">Remaining Reason</div>
-      </div>
-      <p class="list-col-wrap text-xs">
-        "Remaining Reason" became an instant hit, praised for its haunting sound and emotional
-        depth. A viral performance brought it widespread recognition, making it one of Dio Lupa’s
-        most iconic tracks.
-      </p>
-      <button class="btn btn-square btn-ghost">
-        <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <g
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            stroke-width="2"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path d="M6 3L20 12 6 21 6 3z"></path>
-          </g>
-        </svg>
-      </button>
-      <button class="btn btn-square btn-ghost">
-        <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <g
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            stroke-width="2"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path
-              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-            ></path>
-          </g>
-        </svg>
-      </button>
-    </li>
+        <!-- Sidebar content here -->
+        <ul class="menu w-full grow">
+          <!-- List item -->
+          <li>
+            <button
+              class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+              data-tip="Homepage"
+            >
+              <!-- Home icon -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                stroke-linejoin="round"
+                stroke-linecap="round"
+                stroke-width="2"
+                fill="none"
+                stroke="currentColor"
+                class="my-1.5 inline-block size-4"
+              >
+                <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
+                <path
+                  d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                ></path>
+              </svg>
+              <span class="is-drawer-close:hidden">Homepage</span>
+            </button>
+          </li>
 
-    <li class="list-row">
-      <div>
-        <img
-          class="size-10 rounded-box"
-          src="https://img.daisyui.com/images/profile/demo/4@94.webp"
-        />
+          <!-- List item -->
+          <li>
+            <button
+              class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+              data-tip="Settings"
+            >
+              <!-- Settings icon -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                stroke-linejoin="round"
+                stroke-linecap="round"
+                stroke-width="2"
+                fill="none"
+                stroke="currentColor"
+                class="my-1.5 inline-block size-4"
+              >
+                <path d="M20 7h-9"></path>
+                <path d="M14 17H5"></path>
+                <circle cx="17" cy="17" r="3"></circle>
+                <circle cx="7" cy="7" r="3"></circle>
+              </svg>
+              <span class="is-drawer-close:hidden">Settings</span>
+            </button>
+          </li>
+        </ul>
       </div>
-      <div>
-        <div>Ellie Beilish</div>
-        <div class="text-xs uppercase font-semibold opacity-60">Bears of a fever</div>
-      </div>
-      <p class="list-col-wrap text-xs">
-        "Bears of a Fever" captivated audiences with its intense energy and mysterious lyrics. Its
-        popularity skyrocketed after fans shared it widely online, earning Ellie critical acclaim.
-      </p>
-      <button class="btn btn-square btn-ghost">
-        <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <g
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            stroke-width="2"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path d="M6 3L20 12 6 21 6 3z"></path>
-          </g>
-        </svg>
-      </button>
-      <button class="btn btn-square btn-ghost">
-        <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <g
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            stroke-width="2"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path
-              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-            ></path>
-          </g>
-        </svg>
-      </button>
-    </li>
-
-    <li class="list-row">
-      <div>
-        <img
-          class="size-10 rounded-box"
-          src="https://img.daisyui.com/images/profile/demo/3@94.webp"
-        />
-      </div>
-      <div>
-        <div>Sabrino Gardener</div>
-        <div class="text-xs uppercase font-semibold opacity-60">Cappuccino</div>
-      </div>
-      <p class="list-col-wrap text-xs">
-        "Cappuccino" quickly gained attention for its smooth melody and relatable themes. The song’s
-        success propelled Sabrino into the spotlight, solidifying their status as a rising star.
-      </p>
-      <button class="btn btn-square btn-ghost">
-        <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <g
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            stroke-width="2"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path d="M6 3L20 12 6 21 6 3z"></path>
-          </g>
-        </svg>
-      </button>
-      <button class="btn btn-square btn-ghost">
-        <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <g
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            stroke-width="2"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path
-              d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-            ></path>
-          </g>
-        </svg>
-      </button>
-    </li>
-  </ul>
-  <div class="my-1 flex w-full justify-center gap-1">
-    <kbd
-      v-for="key in row1"
-      :key="key"
-      class="kbd cursor-pointer select-none transition-all duration-100"
-      :class="
-        pressedKey === key
-          ? 'scale-90 brightness-75 shadow-none'
-          : 'hover:brightness-90 active:scale-95'
-      "
-      @mousedown="handleKeyDown(key)"
-      @mouseup="handleKeyUp"
-      @mouseleave="handleKeyUp"
-    >
-      {{ key }}
-    </kbd>
-  </div>
-  <div class="my-1 flex w-full justify-center gap-1">
-    <kbd
-      v-for="key in row2"
-      :key="key"
-      class="kbd cursor-pointer select-none transition-all duration-100"
-      :class="
-        pressedKey === key
-          ? 'scale-90 brightness-75 shadow-none'
-          : 'hover:brightness-90 active:scale-95'
-      "
-      @mousedown="handleKeyDown(key)"
-      @mouseup="handleKeyUp"
-      @mouseleave="handleKeyUp"
-    >
-      {{ key }}
-    </kbd>
-  </div>
-  <div class="my-1 flex w-full justify-center gap-1">
-    <kbd
-      v-for="key in row3"
-      :key="key"
-      class="kbd cursor-pointer select-none transition-all duration-100"
-      :class="
-        pressedKey === key
-          ? 'scale-90 brightness-75 shadow-none'
-          : 'hover:brightness-90 active:scale-95'
-      "
-      @mousedown="handleKeyDown(key)"
-      @mouseup="handleKeyUp"
-      @mouseleave="handleKeyUp"
-    >
-      {{ key }}
-    </kbd>
+    </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+<script setup>
+import { ref } from 'vue'
+import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
 
-const row1 = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p']
-const row2 = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l']
-const row3 = ['z', 'x', 'c', 'v', 'b', 'n', 'm', '/']
+const isOpen = ref(true)
 
-const allKeys = [...row1, ...row2, ...row3]
-
-const pressedKey = ref<string | null>(null)
-
-const emit = defineEmits<{
-  keyPress: [key: string]
-}>()
-
-// 鼠标点击
-function handleKeyDown(key: string) {
-  pressedKey.value = key
-  emit('keyPress', key)
+function closeModal() {
+  isOpen.value = false
 }
-
-function handleKeyUp() {
-  pressedKey.value = null
+function openModal() {
+  isOpen.value = true
 }
-
-// 物理键盘
-function onKeyboardDown(event: KeyboardEvent) {
-  const key = event.key.toLowerCase()
-  if (allKeys.includes(key) && pressedKey.value !== key) {
-    pressedKey.value = key
-    emit('keyPress', key)
-  }
-}
-
-function onKeyboardUp(event: KeyboardEvent) {
-  const key = event.key.toLowerCase()
-  if (pressedKey.value === key) {
-    pressedKey.value = null
-  }
-}
-
-onMounted(() => {
-  window.addEventListener('keydown', onKeyboardDown)
-  window.addEventListener('keyup', onKeyboardUp)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', onKeyboardDown)
-  window.removeEventListener('keyup', onKeyboardUp)
-})
 </script>
-
-<style scoped></style>
