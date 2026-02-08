@@ -1043,6 +1043,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyjwt"
+version = "2.11.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/5c/5a/b46fa56bf322901eee5b0454a34343cdbdae202cd421775a8ee4e42fd519/pyjwt-2.11.0.tar.gz", hash = "sha256:35f95c1f0fbe5d5ba6e43f00271c275f7a1a4db1dab27bf708073b75318ea623", size = 98019, upload-time = "2026-01-30T19:59:55.694Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6f/01/c26ce75ba460d5cd503da9e13b21a33804d38c2165dec7b716d06b13010c/pyjwt-2.11.0-py3-none-any.whl", hash = "sha256:94a6bde30eb5c8e04fee991062b534071fd1439ef58d2adc9ccb823e7bcd0469", size = 28224, upload-time = "2026-01-30T19:59:54.539Z" },
+]
+
+[[package]]
 name = "pypika-tortoise"
 version = "0.3.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1682,6 +1691,7 @@ dependencies = [
     { name = "aerich" },
     { name = "fastapi", extra = ["all"] },
     { name = "passlib", extra = ["argon2", "bcrypt", "totp"] },
+    { name = "pyjwt" },
     { name = "redis" },
     { name = "tortoise-orm", extra = ["asyncmy"] },
     { name = "uuid-utils" },
@@ -1692,6 +1702,7 @@ requires-dist = [
     { name = "aerich", specifier = ">=0.9.2" },
     { name = "fastapi", extras = ["all"], specifier = ">=0.128.0" },
     { name = "passlib", extras = ["argon2", "bcrypt", "totp"], specifier = ">=1.7.4" },
+    { name = "pyjwt", specifier = ">=2.11.0" },
     { name = "redis", specifier = ">=6.2.0" },
     { name = "tortoise-orm", extras = ["asyncmy"], specifier = "==0.22.2" },
     { name = "uuid-utils", specifier = ">=0.14.0" },

@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     PORT: int = 8000
     RELOAD: bool = True
 
+    # JWT 配置
+    SECRET_KEY: str = "020121" # 必填，从环境变量读取
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24小时
+
     # 文件配置
     STATIC_DIR: str = "static"
 

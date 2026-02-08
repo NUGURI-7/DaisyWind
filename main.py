@@ -1,12 +1,16 @@
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 
 from backend.app.api import api_router
+from backend.app.core.exception_handlers import app_exception_handler, http_exception_handler, \
+    validation_exception_handler, general_exception_handler
+from backend.app.core.exceptions import AppApiException
 from backend.app.core.redis import redis_client, RedisClient
 from backend.app.db.mysql import MySQLClient
 from config import settings
 from contextlib import asynccontextmanager
 from pathlib import Path
-
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,6 +47,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+
+# 注册全局异常处理器
+app.add_exception_handler(AppApiException, app_exception_handler)  # 自定义业务异常
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)  # HTTP 异常
+app.add_exception_handler(RequestValidationError, validation_exception_handler)  # 参数验证异常
+app.add_exception_handler(Exception, general_exception_handler)  # 兜底异常处理
 app.include_router(api_router, prefix="/api/nuguri")
 
 if __name__ == "__main__":
