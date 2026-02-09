@@ -25,7 +25,7 @@ async def lifespan(app: FastAPI):
     # db_settings() 获取动态配置
     # service_init() 启动第三方服务
     # send_email() 发送email给程序维护者
-
+    print("🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖")
     print(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION}")
     print("✨ 初始化完成 ✨ ")
     yield

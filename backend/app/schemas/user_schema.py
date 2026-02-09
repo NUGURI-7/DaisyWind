@@ -1,11 +1,12 @@
 """
-    @project: Windify
+    @project: DaisyWind
     @Author: niu
     @file: user_schema.py
     @date: 2026/2/3 21:20
     @desc:
 """
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, Field, EmailStr
 
@@ -26,7 +27,7 @@ class UserRegister(BaseModel):
 
 class UserResponse(BaseModel):
     """用户信息响应"""
-    id: str
+    uuid: UUID
     username: str
     email: str
     is_admin: bool

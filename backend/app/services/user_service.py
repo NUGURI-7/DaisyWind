@@ -1,5 +1,5 @@
 """
-    @project: Windify
+    @project: DaisyWind
     @Author: niu
     @file: user_service.py.py
     @date: 2026/2/8 17:39
@@ -38,7 +38,7 @@ class UserService:
         :param login_data:
         :return:
         """
-        user = self.authenticate(login_data.username, login_data.password)
+        user = await self.authenticate(login_data.username, login_data.password)
 
         if not user:
             raise AppAuthenticationFailed(message="Username or password error")

@@ -22,7 +22,7 @@ TORTOISE_CONFIG = {
         },
     },
     'apps': {
-        'models': {  # 应用名称（可以自定义，比如 'windify'）
+        'models': {  # 应用名称（可以自定义，比如 'DaisyWind'）
             'models': ['backend.app.models'],  # 模型所在的模块路径
             'default_connection': 'default',  # 使用的连接名称
         },

@@ -15,9 +15,9 @@ class Settings(BaseSettings):
     RELOAD: bool = True
 
     # JWT 配置
-    SECRET_KEY: str = "020121" # 必填，从环境变量读取
+    SECRET_KEY: str = "wK3_vHJkL9mNpQ2rS4tU5vW6xY7zA8bC9dE0fG1hI2j" # 必填，从环境变量读取
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24小时
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 30  # 24小时
 
     # 文件配置
     STATIC_DIR: str = "static"
