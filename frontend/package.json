@@ -18,15 +18,20 @@
     "@headlessui/vue": "^1.7.23",
     "@tailwindcss/vite": "^4.1.18",
     "@vueuse/core": "^14.2.0",
+    "@vueuse/integrations": "^14.2.0",
+    "axios": "^1.13.2",
+    "nprogress": "^0.2.0",
     "pinia": "^3.0.4",
     "tailwindcss": "^4.1.18",
     "vue": "^3.5.27",
-    "vue-router": "^4.6.4"
+    "vue-router": "^4.6.4",
+    "vue-sonner": "^2.0.9"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.5",
     "@tsconfig/node24": "^24.0.4",
     "@types/node": "^24.10.9",
+    "@types/nprogress": "^0.2.3",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/tsconfig": "^0.8.1",

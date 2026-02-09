@@ -24,3 +24,4 @@ wheels/
 .env
 .vscode
 .python-version
+backend/.claude/settings.local.json
