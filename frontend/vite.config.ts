@@ -14,7 +14,7 @@ export default defineConfig({
   ],
   server: {
     cors: true,
-      host: '0.0.0.0',
+      host: '127.0.0.1',
       port: 7777,
       strictPort: true,
       // proxy: "",

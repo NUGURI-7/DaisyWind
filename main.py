@@ -5,6 +5,7 @@ from backend.app.api import api_router
 from backend.app.core.exception_handlers import app_exception_handler, http_exception_handler, \
     validation_exception_handler, general_exception_handler
 from backend.app.core.exceptions import AppApiException
+from backend.app.core.middlewares import register_middlewares
 from backend.app.core.redis import redis_client, RedisClient
 from backend.app.db.mysql import MySQLClient
 from config import settings
@@ -47,6 +48,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+register_middlewares(app)
 
 # 注册全局异常处理器
 app.add_exception_handler(AppApiException, app_exception_handler)  # 自定义业务异常
