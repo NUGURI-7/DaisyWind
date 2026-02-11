@@ -1,22 +1,31 @@
+import traceback
+
 from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
+
 
 class ResponseMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
 
-
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-
         path = request.url.path
         method = request.method
         ip = request.client.host if request.client else "unknown"
 
         print(f"[请求] {method} {path} [ip地址] {ip}")
-        response = await call_next(request)
+
+        try:
+            response = await call_next(request)
+        except Exception as exc:
+            traceback.print_exc()
+            response = JSONResponse(
+                status_code=500,
+                content={"code": 500, "message": "Internal Server Error", "data": None},
+            )
 
         return response
 

@@ -18,6 +18,8 @@ TORTOISE_CONFIG = {
                 'maxsize': settings.MYSQL_POOL_MAX_SIZE,  # 连接池最大连接数
                 'echo': settings.MYSQL_ECHO,  # 是否打印 SQL 日志
                 'charset': 'utf8mb4',  # 字符集
+                'connect_timeout': 10,  # 连接超时时间（秒）
+                'pool_recycle': 300,  # 每 5 分钟回收空闲连接，防止 MySQL 关掉后报 Lost connection
             }
         },
     },
