@@ -7,11 +7,12 @@
 """
 from backend.app.db.base import BaseModel, UUIDModel, TimestampMixin
 from tortoise import fields
-from passlib.context import CryptContext
 
 
 class User(BaseModel, UUIDModel,TimestampMixin):
     username = fields.CharField(max_length=20, unique=True, description="用户名称", index=True)
+    nick_name = fields.CharField(max_length=50, default="", description="昵称")
+    rank_title = fields.CharField(max_length=50, default="", description="称号")
     email = fields.CharField(max_length=255, unique=True, description="邮箱", index=True)
     password = fields.CharField(max_length=128, null=True, description="密码")
     is_admin = fields.BooleanField(default=False, description="admin", index=True)

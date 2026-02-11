@@ -64,6 +64,7 @@ class UserService:
 
         user = User(
             username=register_data.username,
+            nick_name=register_data.nick_name,
             email=register_data.email
         )
         user.set_password(register_data.password)

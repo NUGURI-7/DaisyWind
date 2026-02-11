@@ -8,4 +8,26 @@ const router = createRouter({
   routes: routes,
 })
 
+const WHITE_LIST = ['/login', '/register']
+
+router.beforeEach((to, _from, next) => {
+  const token = localStorage.getItem('token')
+
+  if (WHITE_LIST.includes(to.path)) {
+    if (token) {
+      next('/')
+    } else {
+      next()
+    }
+  } else {
+    if (!token) {
+      next('/login')
+    } else {
+      next()
+    }
+  }
+})
+
+
+
 export default router

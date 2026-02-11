@@ -21,6 +21,7 @@ class UserLogin(BaseModel):
 class UserRegister(BaseModel):
     """注册请求"""
     username: str = Field(..., min_length=3, max_length=20, description="用户名")
+    nick_name: str = Field(..., min_length=1, max_length=50, description="昵称")
     email: EmailStr = Field(..., description="邮箱")
     password: str = Field(..., min_length=6, max_length=50, description="密码")
 
@@ -29,6 +30,8 @@ class UserResponse(BaseModel):
     """用户信息响应"""
     uuid: UUID
     username: str
+    nick_name: str
+    rank_title: str
     email: str
     is_admin: bool
     created_at: datetime
