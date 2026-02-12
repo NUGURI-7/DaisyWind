@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 import { routes } from './routes'
 
+NProgress.configure({ showSpinner: false })
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,6 +13,7 @@ const router = createRouter({
 const WHITE_LIST = ['/login', '/register']
 
 router.beforeEach((to, _from, next) => {
+  NProgress.start()
   const token = localStorage.getItem('token')
 
   if (WHITE_LIST.includes(to.path)) {
@@ -28,6 +31,8 @@ router.beforeEach((to, _from, next) => {
   }
 })
 
-
+router.afterEach(() => {
+  NProgress.done()
+})
 
 export default router

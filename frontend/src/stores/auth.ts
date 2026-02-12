@@ -9,6 +9,7 @@ export interface UserInfo {
   uuid: string
   username: string
   nick_name: string
+  rank_title: string
   email: string
   is_admin: boolean
   created_at: string

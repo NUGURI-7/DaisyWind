@@ -69,54 +69,48 @@
         </button>
       </li>
     </ul>
-    <!-- 主题切换器 - 展开时显示 -->
-    <div class="w-full p-2 is-drawer-close:hidden">
-      <select v-model="theme" class="select select-bordered w-full select-sm">
-        <option disabled>选择主题</option>
-        <option v-for="t in themes" :key="t" :value="t">
-          {{ t }}
-        </option>
-      </select>
-    </div>
-
-    <!-- 主题切换器 - 收起时显示 -->
-    <div class="is-drawer-open:hidden p-2 w-full">
-      <div class="dropdown dropdown-right w-full">
-        <label
-          tabindex="0"
-          class="btn btn-square btn-ghost btn-sm w-full tooltip tooltip-right"
-          data-tip="主题"
+    <!-- 底部用户信息 -->
+    <!-- 底部用户信息 -->
+    <div class="w-full p-2">
+      <details class="dropdown mb-2 dropdown-top w-full">
+        <summary
+          class="btn btn-ghost w-full justify-start h-14 is-drawer-close:btn-square is-drawer-close:justify-center"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            class="size-4"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-            />
-          </svg>
-        </label>
-        <ul
-          tabindex="0"
-          class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 max-h-96 overflow-y-auto z-50"
-        >
-          <li v-for="t in themes" :key="t">
-            <a @click="setTheme(t)" :class="{ active: theme === t }">{{ t }}</a>
+          <div class="flex items-center gap-3">
+            <img src="/fcb.svg" class="size-8" alt="avatar" />
+            <div class="is-drawer-close:hidden flex items-center gap-2">
+              <span class="text-sm text-base-content/75 leading-none">{{
+                authStore.user?.nick_name
+              }}</span>
+              <span
+                v-if="authStore.user?.rank_title"
+                class="text-xs font-semibold bg-yellow-700/20 text-yellow-800 px-1.5 py-0.5 rounded inline-flex items-center leading-none"
+              >
+                {{ authStore.user?.rank_title }}
+              </span>
+            </div>
+          </div>
+        </summary>
+        <ul class="dropdown-content menu rounded-box bg-base-100 shadow-lg w-full p-2 mb-2 z-50">
+          <li class="menu-title">{{ authStore.user?.email }}</li>
+          <li><button disabled>Settings</button></li>
+          <li><button disabled>Language</button></li>
+          <div class="divider my-0"></div>
+          <li>
+            <button @click="handleLogout" class="font-bold">Log out</button>
           </li>
         </ul>
-      </div>
+      </details>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { userTheme } from '@/composables/useTheme'
+import { userAuthStore } from '@/stores/auth'
 
-const { theme, setTheme, themes } = userTheme()
+const authStore = userAuthStore()
+
+function handleLogout() {
+  setTimeout(() => authStore.logout(), 500)
+}
 </script>

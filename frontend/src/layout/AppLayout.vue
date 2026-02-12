@@ -37,6 +37,10 @@ import { ref, watch } from 'vue'
 import MainContent from './MainContent.vue'
 import Sidebar from './Sidebar.vue'
 import { useBreakpoints } from '@vueuse/core'
+import { onMounted } from 'vue'
+import { userAuthStore } from '@/stores/auth'
+
+const authStore = userAuthStore()
 
 // 定义断点（Tailwind CSS 默认断点）
 const breakpoints = useBreakpoints({
@@ -74,5 +78,9 @@ watch(isDrawerOpen, (value) => {
   if (isLargeScreen.value) {
     userDrawerState.value = value
   }
+})
+
+onMounted(() => {
+  authStore.fetchCurrentUser()
 })
 </script>

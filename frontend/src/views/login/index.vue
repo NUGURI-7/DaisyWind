@@ -19,7 +19,9 @@
           </div>
           <!-- 标题 -->
           <h1 class="text-2xl font-bold text-center">Welcome DaisyWind 🌼</h1>
-          <div class="card bg-base-200/70 backdrop-blur-md shadow-2xl border border-base-300/50 mb-26">
+          <div
+            class="card bg-base-200/70 backdrop-blur-md shadow-2xl border border-base-300/50 mb-26"
+          >
             <div class="card-body p-6 space-y-4">
               <!-- 表单 -->
               <form @submit.prevent="handleLogin" class="space-y-4">
@@ -77,7 +79,7 @@
           loop
           muted
           playsinline
-          class="max-w-full max-h-full object-cover rounded-2xl shadow-[0_4px_20px_0_hsl(var(--always-black)/4%)]"
+          class="max-w-full mb-14 max-h-full object-cover rounded-2xl shadow-[0_4px_20px_0_hsl(var(--always-black)/4%)]"
           style="object-position: 80% 20%"
         ></video>
       </div>
@@ -89,6 +91,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/stores/auth'
+import { toast } from 'vue-sonner'
 
 const router = useRouter()
 
@@ -115,6 +118,7 @@ async function handleLogin() {
 
   try {
     await authStore.login(form.username, form.password)
+    toast.success('Login successful', { duration: 1500 })
     router.push('/')
   } catch (err: any) {
     errorMsg.value = err?.message || 'Login failed'
