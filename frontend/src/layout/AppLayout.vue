@@ -26,7 +26,7 @@
       <MainContent></MainContent>
     </div>
     <!--侧边栏-->
-    <div class="drawer-side">
+    <div class="drawer-side is-drawer-close:overflow-visible">
       <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
       <Sidebar></Sidebar>
     </div>
