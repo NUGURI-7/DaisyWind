@@ -6,15 +6,16 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "aerich>=0.9.2",
+    "bcrypt==4.0.1",
     "fastapi[all]>=0.128.0",
     "passlib[argon2,bcrypt,totp]>=1.7.4",
     "pyjwt>=2.11.0",
     "redis>=6.2.0",
-    "tortoise-orm[asyncmy]==0.22.2",
+    "tortoise-orm[asyncpg]==0.22.2",
     "uuid-utils>=0.14.0",
 ]
 
 [tool.aerich]
-tortoise_orm = "backend.app.db.mysql.TORTOISE_CONFIG"
+tortoise_orm = "backend.app.db.postgresql.TORTOISE_CONFIG"
 location = "./migrations"
 src_folder = "./."

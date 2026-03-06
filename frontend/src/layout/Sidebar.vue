@@ -16,78 +16,73 @@
     class="flex min-h-full flex-col items-start bg-base-300 overflow-x-clip transition-[width] is-drawer-close:w-14 is-drawer-open:w-64"
     style="transition-duration: 300ms"
   >
-    <div
-      class="w-full flex items-center justify-between p-2 is-drawer-close:flex-col is-drawer-close:items-center is-drawer-close:gap-2"
-    >
-      <img src="/raccoon-pa.svg" class="w-16" alt="daisyUI logo" />
-      <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          fill="none"
-          stroke="currentColor"
-          class="my-1.5 inline-block size-4"
+    <!-- 顶部栏：图标始终锚定左侧，toggle 按钮在右侧，sidebar 向右扩展 -->
+    <div class="w-full flex items-center h-12 px-3 gap-3 shrink-0">
+      <!-- logo：折叠时 hover 变为展开图标，位置不动 -->
+      <div class="relative group shrink-0">
+        <img
+          src="/ganda2.svg"
+          class="w-8 transition-opacity duration-200 is-drawer-close:group-hover:opacity-0"
+          alt="logo"
+        />
+        <label
+          for="my-drawer-4"
+          aria-label="open sidebar"
+          class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-200 cursor-pointer is-drawer-close:group-hover:opacity-100 is-drawer-close:group-hover:pointer-events-auto"
         >
-          <path
-            d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"
-          ></path>
-          <path d="M9 4v16"></path>
-          <path d="M14 10l2 2l-2 2"></path>
-        </svg>
+          <PhSidebarSimple :size="20" />
+        </label>
+      </div>
+
+      <!-- 展开时右侧的收起按钮，ml-auto 推到最右 -->
+      <label
+        for="my-drawer-4"
+        aria-label="close sidebar"
+        class="ml-auto shrink-0 btn btn-square btn-ghost btn-sm is-drawer-close:hidden"
+      >
+        <PhSidebarSimple :size="20" />
       </label>
     </div>
 
     <ul class="menu w-full grow">
       <li>
-        <button
-          class="transition-colors is-drawer-close:tooltip is-drawer-close:tooltip-right"
-          style="transition-duration: var(--transition-fast)"
-          data-tip="Homepage"
+        <RouterLink
+          to="/chat"
+          class="flex items-center h-12 transition-colors is-drawer-close:tooltip is-drawer-close:tooltip-right"
+          :style="{ transitionDuration: 'var(--transition-fast)' }"
+          data-tip="New Chat"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            stroke-width="2"
-            fill="none"
-            stroke="currentColor"
-            class="my-1.5 inline-block size-4"
-          >
-            <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path>
-            <path
-              d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-            ></path>
-          </svg>
-          <span class="sidebar-text is-drawer-close:opacity-0">Homepage</span>
-        </button>
+          <PhPlus :size="16" class="shrink-0" />
+          <span class="sidebar-text is-drawer-close:opacity-0 is-drawer-close:w-0 overflow-hidden whitespace-nowrap">
+            New Chat
+          </span>
+        </RouterLink>
+      </li>
+
+      <li>
+        <RouterLink
+          to="/notes"
+          class="flex items-center h-12 transition-colors is-drawer-close:tooltip is-drawer-close:tooltip-right"
+          :style="{ transitionDuration: 'var(--transition-fast)' }"
+          data-tip="Notes"
+        >
+          <PhNotePencil :size="16" class="shrink-0" />
+          <span class="sidebar-text is-drawer-close:opacity-0 is-drawer-close:w-0 overflow-hidden whitespace-nowrap">
+            Notes
+          </span>
+        </RouterLink>
       </li>
 
       <li>
         <button
-          class="transition-colors is-drawer-close:tooltip is-drawer-close:tooltip-right"
-          style="transition-duration: var(--transition-fast)"
+          class="flex items-center h-12 transition-colors is-drawer-close:tooltip is-drawer-close:tooltip-right"
+          :style="{ transitionDuration: 'var(--transition-fast)' }"
           data-tip="Settings"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            stroke-width="2"
-            fill="none"
-            stroke="currentColor"
-            class="my-1.5 inline-block size-4"
-          >
-            <path d="M20 7h-9"></path>
-            <path d="M14 17H5"></path>
-            <circle cx="17" cy="17" r="3"></circle>
-            <circle cx="7" cy="7" r="3"></circle>
-          </svg>
-          <span class="sidebar-text is-drawer-close:opacity-0">Settings</span>
+          <PhSliders :size="16" class="shrink-0" />
+          <span class="sidebar-text is-drawer-close:opacity-0 is-drawer-close:w-0 overflow-hidden whitespace-nowrap">
+            Settings
+          </span>
         </button>
       </li>
     </ul>
@@ -165,7 +160,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { userAuthStore } from '@/stores/auth'
+import { PhSidebarSimple, PhNotePencil, PhSliders, PhPlus } from '@phosphor-icons/vue'
 
 const authStore = userAuthStore()
 

@@ -42,19 +42,18 @@ class Settings(BaseSettings):
         else:
             return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
-    # ==================== MySQL 配置 ====================
-    MYSQL_HOST: str = "localhost"
-    MYSQL_PORT: int = 3306
-    MYSQL_USER: str = "root"
-    MYSQL_PASSWORD: str = ""
-    MYSQL_DATABASE: str = "windify"
-    MYSQL_POOL_MIN_SIZE: int = 1
-    MYSQL_POOL_MAX_SIZE: int = 10
-    MYSQL_ECHO: bool = False
+    # ==================== PostgreSQL 配置 ====================
+    PG_HOST: str = "localhost"
+    PG_PORT: int = 5432
+    PG_USER: str = "postgres"
+    PG_PASSWORD: str = ""
+    PG_DATABASE: str = "daisywind"
+    PG_POOL_MIN_SIZE: int = 1
+    PG_POOL_MAX_SIZE: int = 10
 
     @property
-    def mysql_url(self) -> str:
-        return f"mysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DATABASE}"
+    def pg_url(self) -> str:
+        return f"postgres://{self.PG_USER}:{self.PG_PASSWORD}@{self.PG_HOST}:{self.PG_PORT}/{self.PG_DATABASE}"
 
     # 配置模型设置
     model_config = SettingsConfigDict(

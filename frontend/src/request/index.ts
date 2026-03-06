@@ -5,7 +5,7 @@ import type Result from './Result';
 
 
 const axiosConfig = {
-  baseURL: "http://127.0.0.1:8000/api/nuguri/v1",
+  baseURL: "http://127.0.0.1:7999/api/nuguri/v1",
   withCredentials: false,
   timeout: 1800000, // 30分钟 timeout
   headers: {},

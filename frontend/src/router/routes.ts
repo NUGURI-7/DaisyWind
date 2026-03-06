@@ -24,6 +24,10 @@ export const routes: Array<RouteRecordRaw> = [
                 path: 'chat',
                 component: ()=> import('@/views/chat/index.vue')
             },
+            {
+                path: 'notes',
+                component: ()=> import('@/views/notes/index.vue')
+            },
         ]
     }
 ]

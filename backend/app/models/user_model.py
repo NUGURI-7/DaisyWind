@@ -16,7 +16,8 @@ class User(BaseModel, UUIDModel,TimestampMixin):
     email = fields.CharField(max_length=255, unique=True, description="邮箱", index=True)
     password = fields.CharField(max_length=128, null=True, description="密码")
     is_admin = fields.BooleanField(default=False, description="admin", index=True)
-
+    last_login = fields.DatetimeField(null=True, description="最后登录时间")
+    login_count = fields.IntField(default=0, description="登录次数")
 
     def set_password(self, raw_password: str):
 

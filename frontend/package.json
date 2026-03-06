@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
+    "@milkdown/crepe": "^7.19.0",
+    "@phosphor-icons/vue": "^2.2.1",
     "@tailwindcss/vite": "^4.1.18",
     "@vueuse/core": "^14.2.0",
     "@vueuse/integrations": "^14.2.0",

@@ -4,7 +4,8 @@ import uuid_utils.compat as uuid
 class BaseModel(models.Model):
     id = fields.BigIntField(pk=True, index=True)
 
-
+    class Meta:
+        abstract = True
 
 
 class UUIDModel:

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { provide } from 'vue'
 import { Toaster } from 'vue-sonner'
 import 'vue-sonner/style.css'
+
+provide('weight', 'bold')
 </script>
 
 <template>

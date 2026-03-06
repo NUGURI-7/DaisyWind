@@ -6,11 +6,10 @@ from backend.app.core.exception_handlers import app_exception_handler, http_exce
     validation_exception_handler, general_exception_handler
 from backend.app.core.exceptions import AppApiException
 from backend.app.core.middlewares import register_middlewares
-from backend.app.core.redis import redis_client, RedisClient
-from backend.app.db.mysql import MySQLClient
+from backend.app.core.redis import RedisClient
+from backend.app.db.postgresql import PostgreSQLClient
 from config import settings
 from contextlib import asynccontextmanager
-from pathlib import Path
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 @asynccontextmanager
@@ -21,8 +20,10 @@ async def lifespan(app: FastAPI):
     app.state.redis = redis # type: ignore
 
     # db_init() 链接数据库
-    mysql = MySQLClient()
-    await mysql.connect()
+    pgsql = PostgreSQLClient()
+    await pgsql.connect()
+    # mysql = MySQLClient()
+    # await mysql.connect()
     # db_settings() 获取动态配置
     # service_init() 启动第三方服务
     # send_email() 发送email给程序维护者
@@ -33,7 +34,7 @@ async def lifespan(app: FastAPI):
 
     # logger() 记录关闭日志
     await app.state.redis.close() # type: ignore
-    await mysql.close()
+    await pgsql.close()
     # db_close()
     # service_close()
     # send_email() 发送email给程序维护者
