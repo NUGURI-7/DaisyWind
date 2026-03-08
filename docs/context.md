@@ -31,6 +31,7 @@
 - sidebar 底部用户菜单已通过 `Teleport` 脱离 overflow 裁剪上下文。
 - Notes 页面已经包含本地 note list 和 Milkdown Crepe editor。
 - Notes editor 当前支持新建笔记、切换笔记、编辑 markdown、提取标题和摘要、内存内 autosave，以及代码块折叠和复制反馈交互。
+- Backend Notes CRUD 接口已完成（列表、新建、详情、更新、软删除），路由注册在 `/api/nuguri/note/notes`；title 和 preview 由后端从 content 自动提取。
 - Backend 已有用户注册、登录、获取 current user 的接口。
 - Backend 登录流程当前会更新用户的 `last_login` 和 `login_count`。
 - Backend 生命周期已经接入 Redis 和 PostgreSQL 连接初始化。
@@ -38,12 +39,12 @@
 
 ## 正在进行
 - Chat 模块目前有页面结构，但产品行为还不适合视为稳定完成。
-- Notes 目前仍是 local-only，尚未确认持久化 API 和数据模型。
+- Notes 后端已完成，前端 Pinia store 和组件重构进行中（仍是 local-only）。
 - Settings 入口目前只是 UI 占位，尚未成为正式页面。
 - 当前工作区里仍有部分 frontend 页面和组件处于迭代中。
 
 ## 下一步
-- 为 Notes 增加 backend 持久化，并明确 note data model / API contract。
+- 完成 Notes 前端重构（Pinia store + 组件接入 API，替换 local-only 实现）。
 - 明确 Chat 模块当前范围，以及 frontend 和 backend 的集成状态。
 - 决定 Settings 是继续延期，还是变成真实页面。
 - 需要时补充根目录 `README.md` 的基础运行说明。
@@ -65,6 +66,11 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-03-08（Notes 后端）
+- Notes 模块完成后端 CRUD：Note model（软删除）、NoteService、5 个 REST 接口、路由注册。
+- title 和 preview 由后端从 content 自动提取，前端只传 content。
+- 确定了 Notes 图片方案：本地磁盘存储 + Cookie 鉴权 serve（第二阶段实现）。
+
 ### 2026-03-08
 - 登录相关 user 信息扩展为包含 `last_login` 和 `login_count`，后端登录流程会同步更新这两个字段。
 - Notes editor 增加了代码块折叠和复制成功反馈交互。
