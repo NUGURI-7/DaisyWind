@@ -25,13 +25,14 @@
 ## 当前已有功能
 - 已有注册页，包含基础 client-side 校验和注册成功后跳转登录页。
 - 已有登录页，接入 auth store，支持 token 写入 `localStorage` 和登录后跳转。
-- auth store 支持获取 current user 信息和 logout。
+- auth store 支持获取 current user 信息和 logout；当前 user 信息已包含 `last_login` 和 `login_count`。
 - 主应用布局采用可折叠的 DaisyUI drawer sidebar。
 - sidebar 当前包含 Chat、Notes 和占位中的 Settings 入口。
 - sidebar 底部用户菜单已通过 `Teleport` 脱离 overflow 裁剪上下文。
 - Notes 页面已经包含本地 note list 和 Milkdown Crepe editor。
-- Notes editor 当前支持新建笔记、切换笔记、编辑 markdown、提取标题和摘要、内存内 autosave。
+- Notes editor 当前支持新建笔记、切换笔记、编辑 markdown、提取标题和摘要、内存内 autosave，以及代码块折叠和复制反馈交互。
 - Backend 已有用户注册、登录、获取 current user 的接口。
+- Backend 登录流程当前会更新用户的 `last_login` 和 `login_count`。
 - Backend 生命周期已经接入 Redis 和 PostgreSQL 连接初始化。
 - Backend 里已有用于 Redis 和 DB 测试的 playground 路由。
 
@@ -65,6 +66,8 @@
 
 ## 最近迭代
 ### 2026-03-08
+- 登录相关 user 信息扩展为包含 `last_login` 和 `login_count`，后端登录流程会同步更新这两个字段。
+- Notes editor 增加了代码块折叠和复制成功反馈交互。
 - 建立了 `docs/context.md`，作为后续 AI 新对话优先读取的单一项目上下文文件。
 - 定义了轻量维护策略：重写当前状态、仅保留最近迭代、将更早历史压缩为摘要。
 - 根据当前真实代码结构整理了第一版项目上下文，包括 frontend routes、auth flow、sidebar 行为、notes editor 和 backend API 基础能力。
