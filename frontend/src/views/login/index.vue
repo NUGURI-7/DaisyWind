@@ -12,22 +12,15 @@
       <!-- 左侧 -->
       <div class="w-full lg:w-1/2 flex items-center justify-center overflow-y-auto min-h-0 px-6">
         <div class="w-full max-w-sm space-y-6">
-          <!--
-            两个 logo icon：各自加 animate-slide-up + stagger 延迟
-            再加 animate-gentle-float 无限循环浮动
-            先滑入，滑入结束后开始轻柔浮动
-          -->
-          <div class="flex items-center justify-center gap-12 mb-6">
-            <img
-              src="/mark-rotating.svg"
-              class="size-10 animate-slide-up animate-gentle-float"
-              alt="mark"
-            />
-            <img
-              src="/tailwind-icon.svg"
-              class="size-10 animate-slide-up animate-gentle-float stagger-1"
-              alt="tailwind"
-            />
+          <!-- 单图 logo：保持居中和留白，避免替换大图后视觉失衡 -->
+          <div class="mb-4 flex justify-center">
+            <div class="flex h-32 w-32 items-center justify-center sm:h-32 sm:w-32">
+              <img
+                src="/gopher-fcb-glass.png"
+                class="h-full w-full object-contain animate-slide-up"
+                alt="DaisyWind gopher mascot"
+              />
+            </div>
           </div>
 
           <!-- 保留 🌼 emoji，标题带 animate-slide-up + stagger-1 -->

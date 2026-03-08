@@ -10,6 +10,8 @@ export interface UserInfo {
   username: string
   nick_name: string
   rank_title: string
+  login_count: number
+  last_login: string | null
   email: string
   is_admin: boolean
   created_at: string

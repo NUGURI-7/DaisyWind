@@ -6,6 +6,7 @@
     @desc:
 """
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field, EmailStr
@@ -34,6 +35,8 @@ class UserResponse(BaseModel):
     rank_title: str
     email: str
     is_admin: bool
+    last_login: Optional[datetime] = None
+    login_count: int
     created_at: datetime
     updated_at: datetime
 

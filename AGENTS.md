@@ -7,7 +7,7 @@
 5. 每次完成有意义的项目改动后，更新 `docs/context.md`，同步最新的当前状态。
 6. 保持 `docs/context.md` 精简：优先重写摘要，只保留最近迭代，并将更早内容压缩进历史摘要。
 
-# DaisyWind — Claude Code 指南
+# DaisyWind — Codex 指南
 
 ## 项目结构
 

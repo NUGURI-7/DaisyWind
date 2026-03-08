@@ -53,7 +53,9 @@
           data-tip="New Chat"
         >
           <PhPlus :size="16" class="shrink-0" />
-          <span class="sidebar-text is-drawer-close:opacity-0 is-drawer-close:w-0 overflow-hidden whitespace-nowrap">
+          <span
+            class="sidebar-text is-drawer-close:opacity-0 is-drawer-close:w-0 overflow-hidden whitespace-nowrap"
+          >
             New Chat
           </span>
         </RouterLink>
@@ -67,7 +69,9 @@
           data-tip="Notes"
         >
           <PhNotePencil :size="16" class="shrink-0" />
-          <span class="sidebar-text is-drawer-close:opacity-0 is-drawer-close:w-0 overflow-hidden whitespace-nowrap">
+          <span
+            class="sidebar-text is-drawer-close:opacity-0 is-drawer-close:w-0 overflow-hidden whitespace-nowrap"
+          >
             Notes
           </span>
         </RouterLink>
@@ -80,7 +84,9 @@
           data-tip="Settings"
         >
           <PhSliders :size="16" class="shrink-0" />
-          <span class="sidebar-text is-drawer-close:opacity-0 is-drawer-close:w-0 overflow-hidden whitespace-nowrap">
+          <span
+            class="sidebar-text is-drawer-close:opacity-0 is-drawer-close:w-0 overflow-hidden whitespace-nowrap"
+          >
             Settings
           </span>
         </button>
@@ -149,6 +155,25 @@
           <li><button disabled>Settings</button></li>
           <li><button disabled>Language</button></li>
           <div class="divider my-0"></div>
+          <div class="flex flex-col gap-1.5 py-1 px-3">
+            <div class="flex items-center gap-2">
+              <PhAirplaneTakeoff :size="12" class="text-base-content/40 shrink-0" />
+
+              <span class="text-xs text-base-content/40">Login count</span>
+              <span class="ml-auto text-xs font-medium text-base-content/70">{{
+                authStore.user?.login_count
+              }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <PhClock :size="12" class="text-base-content/40 shrink-0" />
+              <span class="text-xs text-base-content/40">Last login</span>
+              <span class="ml-auto text-xs font-medium text-base-content/70">{{
+                fromNow(authStore.user?.last_login)
+              }}</span>
+            </div>
+          </div>
+
+          <div class="divider my-0"></div>
           <li>
             <button @click="handleLogout" class="font-bold">Log out</button>
           </li>
@@ -160,11 +185,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { PhAirplaneTakeoff, PhClock } from '@phosphor-icons/vue'
 import { RouterLink } from 'vue-router'
 import { userAuthStore } from '@/stores/auth'
 import { PhSidebarSimple, PhNotePencil, PhSliders, PhPlus } from '@phosphor-icons/vue'
 
 const authStore = userAuthStore()
+
+dayjs.extend(relativeTime)
+const fromNow = (date: any) => (date ? dayjs(date).fromNow() : 'Never')
 
 // ===== 用户菜单 dropdown =====
 const userBtnRef = ref<HTMLElement>()

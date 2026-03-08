@@ -6,12 +6,12 @@
     @desc:
 """
 from typing import Optional
-
+from datetime import datetime, timezone
 from backend.app.core.exceptions import AppAuthenticationFailed, ValidationException
 from backend.app.core.security import create_access_token
 from backend.app.models import User
 from backend.app.schemas.user_schema import UserLogin, UserRegister
-
+from tortoise.expressions import F
 
 class UserService:
 
@@ -42,6 +42,10 @@ class UserService:
 
         if not user:
             raise AppAuthenticationFailed(message="Username or password error")
+
+        await User.filter(id=user.id).update(last_login=datetime.now(timezone.utc), login_count=F("login_count") + 1)
+
+        await user.refresh_from_db()
 
         access_token = create_access_token(data={"sub": str(user.id)})
 
