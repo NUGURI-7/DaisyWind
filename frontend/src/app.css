@@ -3,10 +3,10 @@
 @plugin "daisyui";
 
 @plugin "daisyui/theme" {
-  name: "cupcake";
+  name: 'cupcake';
   default: true;
   prefersdark: false;
-  color-scheme: "light";
+  color-scheme: 'light';
   --color-base-100: oklch(98% 0 0);
   --color-base-200: oklch(97% 0 0);
   --color-base-300: oklch(92% 0 0);
@@ -44,6 +44,12 @@
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
+  --color-btn-ghost-hover: oklch(94% 0.008 13);
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  background-color: var(--color-btn-ghost-hover);
 }
 
 #nprogress .bar {

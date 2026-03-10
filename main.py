@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from backend.app.api import api_router
 from backend.app.core.exception_handlers import app_exception_handler, http_exception_handler, \
@@ -57,6 +61,18 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)  # HTT
 app.add_exception_handler(RequestValidationError, validation_exception_handler)  # 参数验证异常
 app.add_exception_handler(Exception, general_exception_handler)  # 兜底异常处理
 app.include_router(api_router, prefix="/api/nuguri")
+
+# 静态文件服务（生产环境，dist 目录存在时生效）
+_DIST = Path(__file__).parent / "frontend" / "dist"
+if _DIST.exists():
+    app.mount("/assets", StaticFiles(directory=_DIST / "assets"), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        file = _DIST / full_path
+        if file.is_file():
+            return FileResponse(file)
+        return FileResponse(_DIST / "index.html")
 
 if __name__ == "__main__":
     import uvicorn

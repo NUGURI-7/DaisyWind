@@ -1,96 +1,156 @@
 <template>
   <div class="flex h-full">
     <!-- 左侧笔记列表 -->
-    <div class="w-52 shrink-0 border-r border-base-300 flex flex-col">
-      <div class="p-2 border-b border-base-300">
-        <button @click="createNote" class="btn btn-ghost btn-sm w-full justify-start gap-2">
-          <PhPlus :size="14" />
-          New Note
-        </button>
-      </div>
+    <div
+      class="shrink-0 overflow-hidden transition-[width] duration-300"
+      :class="listVisible ? 'w-52' : 'w-0'"
+    >
+      <div class="w-52 h-full flex flex-col border-r border-base-300">
+        <div class="p-2 border-b border-base-300">
+          <div class="new-note-wrap">
+            <button @click="createNote" class="btn btn-ghost btn-sm w-full justify-start gap-2">
+              <PhPlus :size="14" />
+              New Note
+            </button>
+          </div>
+        </div>
 
-      <div class="flex-1 overflow-y-auto">
-        <button
-          v-for="note in notes"
-          :key="note.id"
-          @click="selectNote(note.id)"
-          class="w-full text-left px-3 py-3 hover:bg-base-200 transition-colors border-b border-base-200 cursor-pointer"
-          :class="note.id === selectedId ? 'bg-base-200' : ''"
+        <div class="flex-1 overflow-y-auto">
+          <button
+            v-for="id in store.orderedIds"
+            :key="id"
+            @click="selectNote(id)"
+            class="w-full text-left px-3 py-3 hover:bg-base-200 transition-colors border-b border-base-200 cursor-pointer"
+            :class="id === store.selectedId ? 'bg-base-200' : ''"
+          >
+            <div class="text-sm font-medium truncate">
+              {{ store.notesById[id]?.title || 'Untitled' }}
+            </div>
+            <div class="text-xs text-base-content/50 truncate mt-0.5">
+              {{ store.notesById[id]?.preview }}
+            </div>
+            <div class="text-xs text-base-content/30 mt-1">
+              {{ formatDate(store.notesById[id]?.updated_at) }}
+            </div>
+          </button>
+
+          <div
+            v-if="store.orderedIds.length === 0"
+            class="px-3 py-6 text-xs text-base-content/40 text-center"
+          >
+            No notes yet
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分隔条：hover 显示折叠把手 -->
+    <div class="w-3 shrink-0 relative group/divider flex items-center justify-center">
+      <div class="absolute inset-y-0 left-1/2 w-px bg-base-300 -translate-x-1/2" />
+      <button
+        @click="listVisible = !listVisible"
+        class="relative z-10 flex items-center justify-center w-4 h-7 rounded-full bg-base-100 border border-base-300 shadow-sm opacity-0 group-hover/divider:opacity-100 transition-opacity duration-200 hover:bg-base-200 cursor-pointer"
+      >
+        <PhCaretLeft v-if="listVisible" :size="10" />
+        <PhCaretRight v-else :size="10" />
+      </button>
+    </div>
+
+    <!-- 右侧区域 -->
+    <div class="flex-1 flex min-w-0 @container overflow-hidden">
+      <!-- 编辑列（含 toolbar） -->
+      <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <!-- Toolbar -->
+        <div
+          v-if="store.selectedId"
+          class="h-10 shrink-0 flex items-center px-4 gap-2 border-b border-base-200"
         >
-          <div class="text-sm font-medium truncate">{{ note.title || 'Untitled' }}</div>
-          <div class="text-xs text-base-content/50 truncate mt-0.5">{{ note.preview }}</div>
-          <div class="text-xs text-base-content/30 mt-1">{{ formatDate(note.updatedAt) }}</div>
-        </button>
-
-        <div v-if="notes.length === 0" class="px-3 py-6 text-xs text-base-content/40 text-center">
-          No notes yet
+          <span class="text-sm text-base-content/60 truncate flex-1">
+            {{ store.notesById[store.selectedId]?.title || 'Untitled' }}
+          </span>
+          <span class="text-xs text-base-content/40 shrink-0">
+            <template v-if="store.saving === 'saving'">Saving…</template>
+            <template v-else-if="store.saving === 'saved'">Saved</template>
+            <template v-else-if="store.saving === 'error'">Save failed</template>
+          </span>
+          <button @click="confirmDelete" class="btn btn-ghost btn-xs text-error shrink-0">
+            <PhTrash :size="20" />
+          </button>
+          <button
+            @click="aiVisible = !aiVisible"
+            class="btn btn-ghost btn-xs shrink-0"
+            :class="aiVisible ? 'text-primary' : ''"
+          >
+            <PhLayout :size="20" />
+          </button>
         </div>
+
+        <!-- 编辑区域 -->
+        <div class="flex-1 overflow-y-auto py-8 pl-8 pr-8 min-w-0 flex flex-col">
+          <div v-if="store.selectedId" class="flex-1">
+            <div ref="editorRef" class="h-full" />
+          </div>
+          <div v-else class="flex items-center justify-center h-full text-base-content/30 text-sm">
+            Select a note or create a new one
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 面板 -->
+      <div
+        class="shrink-0 overflow-hidden transition-[width] duration-300"
+        :class="aiVisible ? 'w-100' : 'w-0'"
+      >
+        <div class="w-100 h-full border-l border-base-200"></div>
       </div>
     </div>
 
-    <!-- 右侧区域：以此为 container，阈值直接等于书写区域宽度 -->
-    <div class="flex flex-1 min-w-0 @container">
-      <!-- 编辑区域 -->
-      <div class="flex-1 overflow-y-auto py-8 pl-8 pr-8 min-w-0 flex flex-col">
-        <div v-if="selectedId" class="flex-1">
-          <div ref="editorRef" class="h-full" />
-        </div>
-        <div v-else class="flex items-center justify-center h-full text-base-content/30 text-sm">
-          Select a note or create a new one
+    <!-- 删除确认 modal -->
+    <dialog ref="deleteModalRef" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-base">Delete note?</h3>
+        <p class="py-3 text-sm text-base-content/60">This action cannot be undone.</p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn btn-ghost btn-sm">Cancel</button>
+          </form>
+          <button @click="doDelete" class="btn btn-error btn-sm">Delete</button>
         </div>
       </div>
-
-      <!-- AI 面板：右侧区域 ≥ 900px 时显示（即书写区域还有 ~500px 剩余） -->
-      <div class="hidden @[900px]:block w-100 shrink-0 border-l border-base-200"></div>
-    </div>
+      <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, onBeforeUnmount, watch, nextTick, onMounted } from 'vue'
 import { Crepe } from '@milkdown/crepe'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
-import { PhPlus } from '@phosphor-icons/vue'
+import { PhPlus, PhTrash, PhCaretLeft, PhCaretRight, PhLayout } from '@phosphor-icons/vue'
+import { useNoteStore } from '@/stores/notes'
 
-// ── Note / Editor state ────────────────────────────────────
-interface Note {
-  id: string
-  title: string
-  preview: string
-  content: string
-  updatedAt: string
-}
+const store = useNoteStore()
+const listVisible = ref(true)
+const aiVisible = ref(false)
 
-const notes = ref<Note[]>([])
-const selectedId = ref<string>('')
 const editorRef = ref<HTMLElement>()
+const deleteModalRef = ref<HTMLDialogElement>()
+
 let crepe: Crepe | null = null
-let saveTimer: ReturnType<typeof setInterval>
+let pollTimer: ReturnType<typeof setInterval> | null = null
 
-const extractTitle = (content: string) => {
-  const match = content.match(/^#\s+(.+)/m)
-  return match?.[1]?.trim() || 'Untitled'
-}
-
-const extractPreview = (content: string) => {
-  const lines = content
-    .split('\n')
-    .map((l) => l.replace(/<[^>]*>/g, '').trim())
-    .filter((l) => l && !l.startsWith('#'))
-  return lines[0]?.slice(0, 60) || ''
-}
-
-const formatDate = (iso: string) => {
+// ── 工具函数 ───────────────────────────────────────────────
+const formatDate = (iso?: string) => {
+  if (!iso) return ''
   const d = new Date(iso)
   return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
 }
 
-// ── 代码块交互：折叠 + 复制反馈（共用一个委托 listener）─────
+// ── 代码块交互（不变）─────────────────────────────────────
 const handleEditorClick = (e: Event) => {
   const target = e.target as Element
 
-  // 折叠：点击 .tools 头部区域，排除语言选择和复制按钮
   const tools = target.closest<HTMLElement>('.milkdown-code-block .tools')
   if (
     tools &&
@@ -104,7 +164,6 @@ const handleEditorClick = (e: Event) => {
     return
   }
 
-  // 复制成功反馈：打标 → 2s 后摘标
   const copyBtn = target.closest<HTMLElement>('.copy-button')
   if (copyBtn && !copyBtn.hasAttribute('data-copied')) {
     copyBtn.setAttribute('data-copied', '1')
@@ -113,68 +172,86 @@ const handleEditorClick = (e: Event) => {
 }
 
 // ── Editor ────────────────────────────────────────────────
-const initEditor = async (content: string) => {
+const destroyEditor = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+  editorRef.value?.removeEventListener('click', handleEditorClick)
   if (crepe) {
     crepe.destroy()
     crepe = null
   }
+}
+
+const initEditor = async (content: string) => {
+  destroyEditor()
   if (!editorRef.value) return
   editorRef.value.innerHTML = ''
 
   crepe = new Crepe({ root: editorRef.value, defaultValue: content })
   await crepe.create()
-  const proseMirror = editorRef.value.querySelector<HTMLElement>('.ProseMirror')
-  proseMirror?.setAttribute('spellcheck', 'false')
-
-  editorRef.value.removeEventListener('click', handleEditorClick)
+  editorRef.value.querySelector<HTMLElement>('.ProseMirror')?.setAttribute('spellcheck', 'false')
   editorRef.value.addEventListener('click', handleEditorClick)
 
-  clearInterval(saveTimer)
-  saveTimer = setInterval(async () => {
-    if (!crepe || !selectedId.value) return
+  let lastMd = content
+  pollTimer = setInterval(async () => {
+    if (!crepe || !store.selectedId) return
     const md = await crepe.getMarkdown()
-    const note = notes.value.find((n) => n.id === selectedId.value)
-    if (note && md !== note.content) {
-      note.content = md
-      note.title = extractTitle(md)
-      note.preview = extractPreview(md)
-      note.updatedAt = new Date().toISOString()
+    if (md !== lastMd) {
+      lastMd = md
+      store.save(store.selectedId, md)
     }
-  }, 1500)
+  }, 800)
 }
 
 // ── Note actions ───────────────────────────────────────────
-const selectNote = (id: string) => {
-  selectedId.value = id
+const selectNote = async (uuid: string) => {
+  if (uuid === store.selectedId) return
+  await store.flush()
+  store.selectedId = uuid
 }
 
-const createNote = () => {
-  const note: Note = {
-    id: crypto.randomUUID(),
-    title: 'Untitled',
-    preview: '',
-    content: '# Untitled\n\n',
-    updatedAt: new Date().toISOString(),
-  }
-  notes.value.unshift(note)
-  selectedId.value = note.id
+const createNote = async () => {
+  await store.create()
 }
 
+const confirmDelete = () => deleteModalRef.value?.showModal()
+
+const doDelete = async () => {
+  deleteModalRef.value?.close()
+  if (store.selectedId) await store.remove(store.selectedId)
+}
+
+// ── 监听 selectedId，加载内容并初始化编辑器 ───────────────
 watch(
-  selectedId,
-  async (id) => {
-    if (!id) return
-    await nextTick()
-    const note = notes.value.find((n) => n.id === id)
-    if (note) initEditor(note.content)
+  () => store.selectedId,
+  async (uuid) => {
+    destroyEditor()
+    if (!uuid) return
+    const note = store.notesById[uuid]
+    if (note?.content !== undefined) {
+      await nextTick()
+      initEditor(note.content)
+    } else {
+      await store.fetchOne(uuid)
+      await nextTick()
+      const loaded = store.notesById[uuid]
+      if (loaded?.content !== undefined) initEditor(loaded.content)
+    }
   },
-  { flush: 'post' },
 )
 
+onMounted(async () => {
+  await store.fetchList()
+  if (store.orderedIds.length > 0 && !store.selectedId) {
+    store.selectedId = store.orderedIds[0] ?? null
+  }
+})
+
 onBeforeUnmount(() => {
-  clearInterval(saveTimer)
-  editorRef.value?.removeEventListener('click', handleEditorClick)
-  crepe?.destroy()
+  store.flush()
+  destroyEditor()
 })
 </script>
 
@@ -349,5 +426,95 @@ onBeforeUnmount(() => {
 .milkdown .milkdown-code-block {
   padding: 0 !important;
   margin: 4px 0 !important;
+}
+
+/* ── New Note 按钮：流动边框 hover 动效 ── */
+@property --nna {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.new-note-wrap {
+  position: relative;
+  border-radius: var(--radius-field, 0.5rem);
+}
+
+.new-note-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--nna),
+    transparent 0%,
+    var(--color-primary) 25%,
+    color-mix(in oklch, var(--color-primary) 60%, white) 50%,
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  animation: nna-spin 1.8s linear infinite paused;
+  pointer-events: none;
+}
+
+.new-note-wrap:hover::before {
+  opacity: 1;
+  animation-play-state: running;
+}
+
+@keyframes nna-spin {
+  to {
+    --nna: 360deg;
+  }
+}
+
+/* ── Block handle：缩小图标 ── */
+.milkdown .milkdown-block-handle .operation-item {
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.milkdown .milkdown-block-handle .operation-item .milkdown-icon svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* ── Block hover：背景变色 ── */
+.milkdown .ProseMirror > * {
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+.milkdown .ProseMirror > *:hover {
+  background-color: var(--color-base-200);
+}
+
+/* ── Block handle：缩小图标 ── */
+.milkdown .milkdown-block-handle .operation-item {
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.milkdown .milkdown-block-handle .operation-item .milkdown-icon svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* ── CodeMirror 纯文本颜色 ── */
+.milkdown .cm-content {
+  color: var(--color-base-content);
 }
 </style>

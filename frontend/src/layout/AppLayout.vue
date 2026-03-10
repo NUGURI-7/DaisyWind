@@ -53,10 +53,10 @@ const breakpoints = useBreakpoints({
 
 // 判断是否大屏
 const isLargeScreen = breakpoints.greaterOrEqual('lg')
-// 用户手动控制的状态
-const userDrawerState = ref(true)
-// 计算属性：大屏时始终展开，小屏时由用户控制
-const isDrawerOpen = ref(true)
+// 从 localStorage 读取上次状态，默认展开
+const _saved = localStorage.getItem('sidebar-open')
+const userDrawerState = ref(_saved !== null ? _saved === 'true' : true)
+const isDrawerOpen = ref(userDrawerState.value)
 
 // 监听屏幕变化
 watch(
@@ -73,10 +73,11 @@ watch(
   { immediate: true },
 )
 
-// 监听用户操作，保存偏好
+// 监听用户操作，保存偏好到内存和 localStorage
 watch(isDrawerOpen, (value) => {
   if (isLargeScreen.value) {
     userDrawerState.value = value
+    localStorage.setItem('sidebar-open', String(value))
   }
 })
 

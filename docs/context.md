@@ -29,8 +29,8 @@
 - 主应用布局采用可折叠的 DaisyUI drawer sidebar。
 - sidebar 当前包含 Chat、Notes 和占位中的 Settings 入口。
 - sidebar 底部用户菜单已通过 `Teleport` 脱离 overflow 裁剪上下文。
-- Notes 页面已经包含本地 note list 和 Milkdown Crepe editor。
-- Notes editor 当前支持新建笔记、切换笔记、编辑 markdown、提取标题和摘要、内存内 autosave，以及代码块折叠和复制反馈交互。
+- Notes 模块（P1 已完成）：`api/note.ts` + `stores/notes.ts`（Pinia，autosave debounce + race condition 保护）+ `views/notes/index.vue`（接入 API，可折叠列表面板，AI 面板 toolbar 切换，删除确认）。Milkdown Crepe editor 含代码块折叠/复制反馈、block hover 背景高亮。
+- 全局 `btn-ghost` hover 色通过 `--color-btn-ghost-hover` CSS 变量覆盖；sidebar 折叠状态持久化至 `localStorage`。
 - Backend Notes CRUD 接口已完成（列表、新建、详情、更新、软删除），路由注册在 `/api/nuguri/note/notes`；title 和 preview 由后端从 content 自动提取。
 - Backend 已有用户注册、登录、获取 current user 的接口。
 - Backend 登录流程当前会更新用户的 `last_login` 和 `login_count`。
@@ -39,12 +39,11 @@
 
 ## 正在进行
 - Chat 模块目前有页面结构，但产品行为还不适合视为稳定完成。
-- Notes 后端已完成，前端 Pinia store 和组件重构进行中（仍是 local-only）。
 - Settings 入口目前只是 UI 占位，尚未成为正式页面。
 - 当前工作区里仍有部分 frontend 页面和组件处于迭代中。
 
 ## 下一步
-- 完成 Notes 前端重构（Pinia store + 组件接入 API，替换 local-only 实现）。
+- Notes 图片上传方案（Phase Two）：目前图片以 base64 嵌入 content，待接入本地磁盘存储 + Cookie 鉴权 serve。
 - 明确 Chat 模块当前范围，以及 frontend 和 backend 的集成状态。
 - 决定 Settings 是继续延期，还是变成真实页面。
 - 需要时补充根目录 `README.md` 的基础运行说明。
@@ -66,6 +65,14 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-03-10（Notes 前端 P1 完成 + UI 打磨）
+- 完成 Notes 前端重构：`api/note.ts`、`stores/notes.ts`（Pinia）、`index.vue` 接入 API。
+- Notes 列表面板可折叠；AI 面板可通过 toolbar PhLayout 按钮切换（默认收起）。
+- block hover 改为背景变色；纯文本代码块颜色修正为 `--color-base-content`。
+- 全局 `btn-ghost` hover 色通过 CSS 变量统一覆盖（`app.css`）。
+- sidebar 折叠状态持久化至 `localStorage`，刷新不丢失。
+- 后端 Notes 路由修正（`/list`、`/create` 替换空路径，规避 FastAPI trailing slash 冲突）。
+
 ### 2026-03-08（Notes 后端）
 - Notes 模块完成后端 CRUD：Note model（软删除）、NoteService、5 个 REST 接口、路由注册。
 - title 和 preview 由后端从 content 自动提取，前端只传 content。

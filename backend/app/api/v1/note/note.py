@@ -21,7 +21,7 @@ router = APIRouter()
 def get_note_service() -> NoteService:
     return NoteService()
 
-@router.get("/", summary="笔记列表")
+@router.get("/list", summary="笔记列表")
 async def get_list(
         current_user: User = Depends(get_current_user),
         note_service: NoteService = Depends(get_note_service)
@@ -29,7 +29,7 @@ async def get_list(
   notes = await note_service.get_list(current_user.id)
   return success(data=[NoteResponse.model_validate(note).model_dump() for note in notes])
 
-@router.post('/',summary="新建笔记")
+@router.post('/create',summary="新建笔记")
 async def create(
         current_user: User = Depends(get_current_user),
         note_service: NoteService = Depends(get_note_service)

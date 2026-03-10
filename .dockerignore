@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Dev / editor
+.git/
+.claude/
+docs/
+*.md

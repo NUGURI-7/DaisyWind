@@ -1,5 +1,7 @@
 # Notes Module Plan
 
+> **Status: P1 Completed (2026-03-10)**
+
 ## Positioning
 
 This document is a working implementation plan for the Notes module.
@@ -34,11 +36,13 @@ Note
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/notes` | Return note list metadata only, ordered by `updated_at` desc, excluding soft-deleted notes |
-| `POST` | `/notes` | Create a note immediately and return the full note |
-| `GET` | `/notes/{id}` | Return one note with full content |
-| `PUT` | `/notes/{id}` | Update note content only; backend derives `title` and `preview` |
-| `DELETE` | `/notes/{id}` | Soft delete by writing `deleted_at` |
+| `GET` | `/list` | Return note list metadata only, ordered by `updated_at` desc, excluding soft-deleted notes |
+| `POST` | `/create` | Create a note immediately and return the full note |
+| `GET` | `/{uuid}` | Return one note with full content |
+| `PUT` | `/{uuid}` | Update note content only; backend derives `title` and `preview` |
+| `DELETE` | `/{uuid}` | Soft delete by writing `deleted_at` |
+
+> **Implementation note:** Path changed from `/notes` / `/notes/{id}` to `/list`, `/create`, `/{uuid}` to avoid FastAPI trailing slash redirect conflict with empty-string router paths.
 
 All endpoints require authentication and are scoped to the current user only.
 
@@ -102,6 +106,8 @@ Frontend:
 6. Refactor `views/notes/index.vue` to use store, lazy loading, debounced autosave, and delete flow
 
 ### 7. Phase Two
+
+> **Status: Not yet implemented.** Currently images are embedded as base64 data URIs directly in note content.
 
 - Add image upload endpoint
 - Store note images on local disk

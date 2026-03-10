@@ -22,6 +22,9 @@ wheels/
 
 # Config
 .env
+.codex/
+frontend/.env.development
+frontend/.env.production
 .vscode
 .python-version
 backend/.claude/settings.local.json

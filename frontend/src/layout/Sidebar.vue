@@ -136,7 +136,7 @@
     -->
     <Teleport to="body">
       <!-- 透明遮罩：点击任意空白区域关闭菜单 -->
-      <div v-if="isDropdownOpen" class="fixed inset-0 z-[60]" @click="isDropdownOpen = false"></div>
+      <div v-if="isDropdownOpen" class="fixed inset-0 z-60" @click="isDropdownOpen = false"></div>
       <!-- 弹出菜单，带淡入/滑出动画 -->
       <Transition
         enter-active-class="transition duration-200 ease-out"
@@ -149,7 +149,7 @@
         <ul
           v-if="isDropdownOpen"
           :style="menuStyle"
-          class="fixed menu rounded-box bg-base-100 shadow-lg p-2 z-[70]"
+          class="fixed menu rounded-box bg-base-100 shadow-lg p-2 z-70"
         >
           <li class="menu-title">{{ authStore.user?.email }}</li>
           <li><button disabled>Settings</button></li>
