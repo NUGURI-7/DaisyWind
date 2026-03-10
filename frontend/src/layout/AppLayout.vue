@@ -83,5 +83,7 @@ watch(isDrawerOpen, (value) => {
 
 onMounted(() => {
   authStore.fetchCurrentUser()
+  // 后台预加载 Notes chunk（含 Milkdown），消除首次点击延迟
+  import('@/views/notes/index.vue')
 })
 </script>
