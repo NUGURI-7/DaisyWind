@@ -4,7 +4,7 @@
     <!--主区域-->
     <div class="drawer-content">
       <div class="p-2 lg:hidden">
-        <label for="my-drawer-4" class="btn btn-square btn-ghost" aria-label="open sidebar">
+        <label for="my-drawer-4" class="flex items-center justify-center size-10 rounded-md hover:bg-base-200 transition-colors cursor-pointer" aria-label="open sidebar">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"

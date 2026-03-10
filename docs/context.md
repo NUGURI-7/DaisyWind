@@ -65,6 +65,13 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-03-10（Notes UI 深度打磨与 Bug 修复）
+- 移除了全局的 `btn-ghost` 依赖，改用纯 Tailwind v4 工具类构建精致 hover。
+- 优化了 Notes 列表交互（左侧高亮指示线，Hover 微移，时间重排）。
+- 引入 URL 驱动状态，通过 `vue-router` 将 `selectedId` 绑定至 URL query，解决刷新和路由切换时的状态丢失问题。
+- 重绘了无笔记选中时的右侧引导空状态（Empty State）组件。
+- 为保存状态指示器增加了旋转与 2 秒后消散的 Tailwind 渐变动画。
+
 ### 2026-03-10（Notes 前端 P1 完成 + UI 打磨）
 - 完成 Notes 前端重构：`api/note.ts`、`stores/notes.ts`（Pinia）、`index.vue` 接入 API。
 - Notes 列表面板可折叠；AI 面板可通过 toolbar PhLayout 按钮切换（默认收起）。

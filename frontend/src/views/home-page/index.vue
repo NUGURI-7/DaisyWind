@@ -10,7 +10,7 @@
           class="w-full flex items-center justify-between p-2 is-drawer-close:flex-col is-drawer-open:items-center is-drawer-close:gap-2"
         >
           <img src="/raccoon-pa.svg" class="w-16" alt="daisyUI logo" />
-          <label for="my-drawer-4" aria-label="open sidebar" class="btn btn-square btn-ghost">
+          <label for="my-drawer-4" aria-label="open sidebar" class="flex items-center justify-center size-10 rounded-lg hover:bg-base-200 transition-colors cursor-pointer">
             <!-- Sidebar toggle icon -->
             <svg
               xmlns="http://www.w3.org/2000/svg"

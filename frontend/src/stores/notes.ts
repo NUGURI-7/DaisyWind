@@ -45,6 +45,8 @@ export const useNoteStore = defineStore('notes', () => {
    notesById.value[note.uuid] = {...note}
    orderedIds.value.unshift(note.uuid)
    selectedId.value = note.uuid
+
+   return note.uuid
  }
 
   

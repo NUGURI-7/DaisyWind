@@ -8,7 +8,10 @@
       <div class="w-52 h-full flex flex-col border-r border-base-300">
         <div class="p-2 border-b border-base-300">
           <div class="new-note-wrap">
-            <button @click="createNote" class="btn btn-ghost btn-sm w-full justify-start gap-2">
+            <button
+              @click="createNote"
+              class="flex items-center w-full h-8 px-3 gap-2 rounded-md text-sm font-medium hover:bg-base-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
+            >
               <PhPlus :size="14" />
               New Note
             </button>
@@ -20,17 +23,25 @@
             v-for="id in store.orderedIds"
             :key="id"
             @click="selectNote(id)"
-            class="w-full text-left px-3 py-3 hover:bg-base-200 transition-colors border-b border-base-200 cursor-pointer"
-            :class="id === store.selectedId ? 'bg-base-200' : ''"
+            class="group relative w-full text-left p-3 transition-all duration-200 cursor-pointer border-b border-base-200/50 hover:bg-base-200/50 focus-visible:outline-none focus-visible:bg-base-200"
+            :class="[id === store.selectedId ? 'bg-base-200 pr-2 pl-4' : 'hover:pl-4']"
           >
-            <div class="text-sm font-medium truncate">
-              {{ store.notesById[id]?.title || 'Untitled' }}
+            <!-- 选中状态左侧指示线 -->
+            <div
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-primary transition-all duration-300"
+              :class="id === store.selectedId ? 'h-3/4 opacity-100' : 'h-0 opacity-0'"
+            ></div>
+
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <div class="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                {{ store.notesById[id]?.title || 'Untitled' }}
+              </div>
+              <div class="text-[10px] text-base-content/40 shrink-0">
+                {{ formatDate(store.notesById[id]?.updated_at) }}
+              </div>
             </div>
-            <div class="text-xs text-base-content/50 truncate mt-0.5">
-              {{ store.notesById[id]?.preview }}
-            </div>
-            <div class="text-xs text-base-content/30 mt-1">
-              {{ formatDate(store.notesById[id]?.updated_at) }}
+            <div class="text-xs text-base-content/50 truncate">
+              {{ store.notesById[id]?.preview || 'No content' }}
             </div>
           </button>
 
@@ -65,21 +76,55 @@
           v-if="store.selectedId"
           class="h-10 shrink-0 flex items-center px-4 gap-2 border-b border-base-200"
         >
-          <span class="text-sm text-base-content/60 truncate flex-1">
+          <span class="text-sm font-medium text-base-content/70 truncate flex-1">
             {{ store.notesById[store.selectedId]?.title || 'Untitled' }}
           </span>
-          <span class="text-xs text-base-content/40 shrink-0">
-            <template v-if="store.saving === 'saving'">Saving…</template>
-            <template v-else-if="store.saving === 'saved'">Saved</template>
-            <template v-else-if="store.saving === 'error'">Save failed</template>
-          </span>
-          <button @click="confirmDelete" class="btn btn-ghost btn-xs text-error shrink-0">
+
+          <!-- 状态指示器区 -->
+          <div class="flex items-center gap-1.5 text-xs font-medium shrink-0 h-full">
+            <!-- 保存中 (蓝色转圈) -->
+            <transition name="fade">
+              <span v-if="store.saving === 'saving'" class="flex items-center gap-1.5 text-info">
+                <PhSpinner :size="14" class="animate-spin" />
+                Saving...
+              </span>
+            </transition>
+
+            <!-- 保存成功 (绿色对勾，加了 Tailwind 动画让他淡出) -->
+            <transition name="fade">
+              <span
+                v-if="store.saving === 'saved'"
+                class="flex items-center gap-1.5 text-success animate-[fadeOut_2s_ease-out_forwards]"
+              >
+                <PhCheckCircle :size="14" />
+                Saved
+              </span>
+            </transition>
+
+            <!-- 保存失败 (红色警告) -->
+            <transition name="fade">
+              <span v-if="store.saving === 'error'" class="flex items-center gap-1.5 text-error">
+                Save failed
+              </span>
+            </transition>
+          </div>
+
+          <button
+            @click="confirmDelete"
+            class="flex items-center justify-center size-7 rounded-md text-error/60 hover:text-error hover:bg-error/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/50 shrink-0 cursor-pointer"
+            aria-label="Delete note"
+          >
             <PhTrash :size="20" />
           </button>
           <button
             @click="aiVisible = !aiVisible"
-            class="btn btn-ghost btn-xs shrink-0"
-            :class="aiVisible ? 'text-primary' : ''"
+            class="flex items-center justify-center size-7 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 shrink-0 cursor-pointer"
+            :class="
+              aiVisible
+                ? 'text-primary bg-primary/10 hover:bg-primary/20'
+                : 'text-base-content/60 hover:text-base-content hover:bg-base-200'
+            "
+            aria-label="Toggle AI panel"
           >
             <PhLayout :size="20" />
           </button>
@@ -90,8 +135,23 @@
           <div v-if="store.selectedId" class="flex-1">
             <div ref="editorRef" class="h-full" />
           </div>
-          <div v-else class="flex items-center justify-center h-full text-base-content/30 text-sm">
-            Select a note or create a new one
+          <div v-else class="flex flex-col items-center justify-center h-full text-center px-4">
+            <div
+              class="flex items-center justify-center size-16 rounded-full bg-base-200/50 text-base-content/20 mb-4"
+            >
+              <PhNoteBlank :size="32" weight="light" />
+            </div>
+            <h3 class="text-sm font-medium text-base-content/70 mb-1">No Note Selected</h3>
+            <p class="text-xs text-base-content/40 max-w-xs mb-6 leading-relaxed">
+              Choose a note from the sidebar or create a new one to start writing.
+            </p>
+            <button
+              @click="createNote"
+              class="flex items-center h-9 px-4 gap-2 rounded-md bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
+            >
+              <PhPlus :size="16" />
+              Create New Note
+            </button>
           </div>
         </div>
       </div>
@@ -112,7 +172,11 @@
         <p class="py-3 text-sm text-base-content/60">This action cannot be undone.</p>
         <div class="modal-action">
           <form method="dialog">
-            <button class="btn btn-ghost btn-sm">Cancel</button>
+            <button
+              class="flex items-center justify-center h-8 px-4 rounded-md text-sm font-medium hover:bg-base-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/50 cursor-pointer"
+            >
+              Cancel
+            </button>
           </form>
           <button @click="doDelete" class="btn btn-error btn-sm">Delete</button>
         </div>
@@ -127,8 +191,21 @@ import { ref, onBeforeUnmount, watch, nextTick, onMounted } from 'vue'
 import { Crepe } from '@milkdown/crepe'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
-import { PhPlus, PhTrash, PhCaretLeft, PhCaretRight, PhLayout } from '@phosphor-icons/vue'
+import {
+  PhPlus,
+  PhTrash,
+  PhCaretLeft,
+  PhCaretRight,
+  PhLayout,
+  PhNoteBlank,
+  PhSpinner,
+  PhCheckCircle,
+} from '@phosphor-icons/vue'
 import { useNoteStore } from '@/stores/notes'
+import { useRoute, useRouter } from 'vue-router'
+
+const route = useRoute()
+const router = useRouter()
 
 const store = useNoteStore()
 const listVisible = ref(true)
@@ -210,10 +287,15 @@ const selectNote = async (uuid: string) => {
   if (uuid === store.selectedId) return
   await store.flush()
   store.selectedId = uuid
+  router.push({ query: { id: uuid } })
 }
 
 const createNote = async () => {
-  await store.create()
+  const newId = await store.create()
+
+  if (newId) {
+    router.push({ query: { id: newId } }) // 更新地址栏
+  }
 }
 
 const confirmDelete = () => deleteModalRef.value?.showModal()
@@ -240,14 +322,31 @@ watch(
       if (loaded?.content !== undefined) initEditor(loaded.content)
     }
   },
+  { immediate: true },
 )
 
 onMounted(async () => {
   await store.fetchList()
-  if (store.orderedIds.length > 0 && !store.selectedId) {
-    store.selectedId = store.orderedIds[0] ?? null
+
+  const idFromUrl = route.query.id
+
+  if (idFromUrl && typeof idFromUrl === 'string') {
+    store.selectedId = idFromUrl
+  } else {
+    store.selectedId = null
   }
 })
+
+watch(
+  () => route.query.id,
+  (newId) => {
+    if (newId && typeof newId === 'string') {
+      store.selectedId = newId
+    } else {
+      store.selectedId = null
+    }
+  },
+)
 
 onBeforeUnmount(() => {
   store.flush()
@@ -516,5 +615,29 @@ onBeforeUnmount(() => {
 /* ── CodeMirror 纯文本颜色 ── */
 .milkdown .cm-content {
   color: var(--color-base-content);
+}
+
+/* Vue transition 过渡类 */
+.fade-enter-active,
+.fade-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-2px);
+}
+
+/* 延迟淡出动画（给 Saved 用的） */
+@keyframes fadeOut {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 </style>

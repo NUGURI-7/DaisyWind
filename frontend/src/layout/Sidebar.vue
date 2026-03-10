@@ -38,7 +38,7 @@
       <label
         for="my-drawer-4"
         aria-label="close sidebar"
-        class="ml-auto shrink-0 btn btn-square btn-ghost btn-sm is-drawer-close:hidden"
+        class="ml-auto shrink-0 flex items-center justify-center size-8 rounded-md hover:bg-base-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer is-drawer-close:hidden"
       >
         <PhSidebarSimple :size="20" />
       </label>
@@ -104,7 +104,7 @@
         <button
           ref="userBtnRef"
           @click="toggleUserMenu"
-          class="btn btn-ghost w-full justify-start h-14 is-drawer-close:btn-square is-drawer-close:justify-center is-drawer-close:p-0"
+          class="flex items-center w-full h-14 px-4 rounded-lg hover:bg-base-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 is-drawer-close:w-14 is-drawer-close:px-0 is-drawer-close:justify-center cursor-pointer"
         >
           <div class="flex items-center gap-3 is-drawer-close:gap-0">
             <img src="/fcb.svg" class="size-8 shrink-0" alt="avatar" />
