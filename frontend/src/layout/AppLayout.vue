@@ -1,43 +1,68 @@
 <template>
-  <div class="drawer lg:drawer-open">
-    <input id="my-drawer-4" type="checkbox" class="drawer-toggle" v-model="isDrawerOpen" />
-    <!--主区域-->
-    <div class="drawer-content">
-      <div class="p-2 lg:hidden">
-        <label for="my-drawer-4" class="flex items-center justify-center size-10 rounded-md hover:bg-base-200 transition-colors cursor-pointer" aria-label="open sidebar">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            stroke-width="2"
-            fill="none"
-            stroke="currentColor"
-            class="my-1.5 inline-block size-4"
-          >
-            <path
-              d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"
-            ></path>
-            <path d="M9 4v16"></path>
-            <path d="M14 10l2 2l-2 2"></path>
-          </svg>
-        </label>
+  <!-- 
+    移动端采用方案B（高级原生抽屉体验）：
+    - 大屏 (lg+): 正常的 Flex 平铺布局，Sidebar 挤压 Main 区域。
+    - 小屏: Sidebar 变为 fixed 定位，浮在 Main 之上，并配有可点击关闭的半透明黑色遮罩 (Backdrop)。
+  -->
+  <div class="flex h-screen relative overflow-hidden bg-background">
+    
+    <!-- 移动端遮罩 Backdrop (仅小屏且展开时显示) -->
+    <Transition
+      enter-active-class="transition-opacity duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div 
+        v-if="!isLargeScreen && isDrawerOpen"
+        class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        @click="isDrawerOpen = false"
+        aria-hidden="true"
+      ></div>
+    </Transition>
+
+    <!-- Sidebar 区域 
+         小屏时 fixed 定位，靠左边缘，利用 transform 实现侧滑
+         大屏时 static 定位，占据真实文档流宽度
+    -->
+    <div
+      class="fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0"
+      :class="[!isLargeScreen && !isDrawerOpen ? '-translate-x-full' : 'translate-x-0']"
+    >
+      <Sidebar :is-open="isDrawerOpen" @toggle="isDrawerOpen = !isDrawerOpen" />
+    </div>
+
+    <!-- Main 区域 -->
+    <div class="flex-1 flex flex-col min-w-0 h-full relative z-0">
+      <!-- 移动端 toggle 按钮 (仅小屏显示) -->
+      <div class="shrink-0 p-3 lg:hidden flex items-center border-b border-border bg-background">
+        <button 
+          @click="isDrawerOpen = !isDrawerOpen" 
+          class="flex items-center justify-center size-9 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+          aria-label="Toggle sidebar"
+        >
+          <PhSidebarSimple :size="20" />
+        </button>
       </div>
-      <MainContent></MainContent>
+
+      <!-- 内容区 -->
+      <div class="flex-1 min-h-0">
+        <MainContent />
+      </div>
     </div>
-    <!--侧边栏-->
-    <div class="drawer-side is-drawer-close:overflow-visible">
-      <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-      <Sidebar></Sidebar>
-    </div>
+    
   </div>
 </template>
+
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import { useBreakpoints } from '@vueuse/core'
+import { PhSidebarSimple } from '@phosphor-icons/vue'
+
 import MainContent from './MainContent.vue'
 import Sidebar from './Sidebar.vue'
-import { useBreakpoints } from '@vueuse/core'
-import { onMounted } from 'vue'
 import { userAuthStore } from '@/stores/auth'
 
 const authStore = userAuthStore()
@@ -53,6 +78,7 @@ const breakpoints = useBreakpoints({
 
 // 判断是否大屏
 const isLargeScreen = breakpoints.greaterOrEqual('lg')
+
 // 从 localStorage 读取上次状态，默认展开
 const _saved = localStorage.getItem('sidebar-open')
 const userDrawerState = ref(_saved !== null ? _saved === 'true' : true)
@@ -63,7 +89,7 @@ watch(
   isLargeScreen,
   (isLarge) => {
     if (!isLarge) {
-      // 切换到小屏时自动关闭
+      // 切换到小屏时自动隐藏 Sidebar
       isDrawerOpen.value = false
     } else {
       // 切换到大屏时恢复用户偏好或默认展开

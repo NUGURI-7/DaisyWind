@@ -1,8 +1,8 @@
 <template>
-  <div class="flex flex-col h-screen bg-base-100 overflow-hidden">
+  <div class="flex flex-col h-screen bg-background overflow-hidden text-foreground">
     <!-- 导航栏：加 animate-fade-in 入场 -->
-    <div class="navbar px-6 animate-fade-in">
-      <div class="navbar-start">
+    <div class="flex items-center px-6 h-14 animate-fade-in">
+      <div class="flex items-center">
         <img src="/claude-icon.svg" class="mr-2 size-8" alt="logo" />
         <span class="text-2xl font-bold tracking-tight">DaisyWind</span>
       </div>
@@ -23,9 +23,9 @@
             </div>
           </div>
 
-          <!-- 保留 🌼 emoji，标题带 animate-slide-up + stagger-1 -->
-          <h1 class="text-2xl font-bold text-center animate-slide-up stagger-1">
-            Welcome DaisyWind 🌼
+          <!-- 标题带 animate-slide-up + stagger-1 -->
+          <h1 class="text-2xl font-bold text-center animate-slide-up stagger-1 tracking-tight">
+            Welcome to DaisyWind
           </h1>
 
           <!--
@@ -33,28 +33,24 @@
             从 0.95 缩放弹入，配合 stagger 延迟，在标题之后出现
             hover 时 shadow 稍微增大，有"浮起来"的感觉
           -->
-          <div
-            class="card bg-base-200/70 backdrop-blur-md shadow-2xl border border-base-300/50 mb-26 animate-scale-in stagger-2 transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+          <Card
+            class="bg-card/70 backdrop-blur-md shadow-lg border-border mb-26 animate-scale-in stagger-2 transition-shadow hover:shadow-xl"
             style="transition-duration: var(--transition-normal)"
           >
-            <div class="card-body p-6 space-y-4">
+            <CardContent class="p-6 space-y-4">
               <form @submit.prevent="handleLogin" class="space-y-4">
                 <!--
                   每个 fieldset 加 animate-slide-up + 递增的 stagger
                   表单字段逐个从下方滑入，有交错节奏感
-
-                  input 的 focus 效果：
-                  - 去掉 ring（光晕），你觉得太突兀
-                  - 只保留 focus:border-base-content/30，聚焦时边框稍微加深
-                  - 效果很克制，不抢视觉焦点
                 -->
-                <fieldset class="fieldset animate-slide-up stagger-2">
-                  <legend class="fieldset-legend">Username</legend>
-                  <input
+                <div class="space-y-1.5 animate-slide-up stagger-2">
+                  <Label for="username">Username</Label>
+                  <Input
+                    id="username"
                     v-model="form.username"
                     type="text"
                     placeholder="Enter your username"
-                    class="input input-bordered w-full transition-colors focus:border-base-content/30"
+                    class="w-full transition-colors"
                     style="transition-duration: var(--transition-fast)"
                     required
                     minlength="3"
@@ -62,52 +58,56 @@
                     pattern="[a-zA-Z0-9_\-]+"
                     title="Only letters, numbers, underscores and hyphens"
                   />
-                </fieldset>
-                <fieldset class="fieldset animate-slide-up stagger-3">
-                  <legend class="fieldset-legend">Password</legend>
-                  <input
+                </div>
+                <div class="space-y-1.5 animate-slide-up stagger-3">
+                  <Label for="password">Password</Label>
+                  <Input
+                    id="password"
                     v-model="form.password"
                     type="password"
                     placeholder="Enter your password"
-                    class="input input-bordered w-full transition-colors focus:border-base-content/30"
+                    class="w-full transition-colors"
                     style="transition-duration: var(--transition-fast)"
                     required
                     minlength="6"
                     maxlength="50"
                   />
-                </fieldset>
+                </div>
 
                 <!-- 错误消息：animate-slide-down 从上方滑入 -->
-                <p v-if="errorMsg" class="text-error text-sm text-center animate-slide-down">
+                <p v-if="errorMsg" class="text-destructive text-sm text-center animate-slide-down">
                   {{ errorMsg }}
                 </p>
 
                 <!--
                   提交按钮：animate-slide-up stagger-4
                   hover 时 微弱上移 + 加阴影，有"按钮被抬起来"的感觉
-                  用 transform 做动画（GPU 加速，不会引起 layout shift）
                 -->
-                <button
+                <Button
                   type="submit"
-                  class="btn btn-neutral btn-block animate-slide-up stagger-4 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                  class="w-full animate-slide-up stagger-4 transition-all hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
                   style="transition-duration: var(--transition-fast)"
                   :disabled="loading"
                 >
-                  <span v-if="loading" class="loading loading-spinner loading-sm"></span>
+                  <PhSpinner v-if="loading" class="animate-spin mr-2" />
                   <span v-else>Sign in</span>
-                </button>
+                </Button>
               </form>
 
-              <!-- 分割线 + 跳转链接，不用 link-primary，用默认文字色 -->
-              <div class="divider my-0 text-xs text-base-content/40">or</div>
-              <p class="text-center text-sm animate-fade-in stagger-5">
+              <!-- 分割线 + 跳转链接 -->
+              <div class="relative flex items-center py-2">
+                <div class="flex-1"><Separator /></div>
+                <span class="mx-4 text-xs text-muted-foreground">or</span>
+                <div class="flex-1"><Separator /></div>
+              </div>
+              <p class="text-center text-sm animate-fade-in stagger-5 text-muted-foreground">
                 Don't have an account?
-                <router-link to="/register" class="link link-hover font-medium underline-offset-2">
+                <router-link to="/register" class="font-medium text-primary hover:underline underline-offset-2">
                   Sign up
                 </router-link>
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -124,7 +124,7 @@
           loop
           muted
           playsinline
-          class="max-w-full mb-14 max-h-full object-cover rounded-2xl shadow-[0_4px_20px_0_hsl(var(--always-black)/4%)]"
+          class="max-w-full mb-14 max-h-full object-cover rounded-2xl shadow-xl border border-border"
           style="object-position: 80% 20%"
         ></video>
       </div>
@@ -137,6 +137,13 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/stores/auth'
 import { toast } from 'vue-sonner'
+import { PhSpinner } from '@phosphor-icons/vue'
+
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 
 const router = useRouter()
 const authStore = userAuthStore()

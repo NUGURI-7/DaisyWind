@@ -11,7 +11,7 @@
 
 ## 项目结构
 
-- `frontend/` — Vue 3 + Vite + Tailwind CSS v4 + DaisyUI v5
+- `frontend/` — Vue 3 + Vite + Tailwind CSS v4 + shadcn-vue (Reka UI v2)
 - `main.py` / `backend/` — FastAPI + Tortoise ORM + Redis
 - `config.py` — 全局配置（端口、DB、Redis、JWT 等）
 
@@ -26,7 +26,7 @@
 
 - 展开宽度：`w-64`（256px）；折叠宽度：`w-14`（56px）
 - 过渡：`transition-[width] duration-300ms`
-- 状态变体：`is-drawer-open:` / `is-drawer-close:`（CSS 自定义 variant，不是 Vue 响应式）
+- 状态变体：`group-data-[collapsed]/sidebar:`（Tailwind v4 原生 data attribute variant）
 
 ### 动画原则：图标锚定左侧，sidebar 向右扩展
 
@@ -78,8 +78,38 @@ import { PhPlus, PhNotePencil, PhSliders } from '@phosphor-icons/vue'
 
 ---
 
-## Tailwind / DaisyUI 注意事项
+## Tailwind CSS 注意事项
 
-- 使用 Tailwind v4，支持 variant 叠加，如 `is-drawer-close:group-hover:opacity-100`
-- DaisyUI menu button 默认 `display: block`，需要手动加 `flex items-center` 才能可靠控制高度
-- `overflow-x-clip`（非 `overflow-x-hidden`）：只裁剪水平方向，不影响垂直方向的 dropdown 弹出
+- 使用 Tailwind v4（CSS-based config，无 tailwind.config.js），支持 variant 叠加，如 `group-data-[collapsed]/sidebar:group-hover:opacity-100`
+- `overflow-x-clip`（非 `overflow-x-hidden`）：只裁剪水平方向，不影响垂直方向的 Popover / dropdown 弹出
+
+## Git 提交规范
+
+### Commit Message 格式
+
+```
+<type>: <简短英文标题，不超过 70 字符>
+
+- 中文要点 1
+- 中文要点 2
+- ...
+
+英文摘要行 1（对应中文要点，用于非中文读者快速理解）
+英文摘要行 2
+```
+
+### Type 类型
+
+- `feat` — 新功能
+- `fix` — Bug 修复
+- `refactor` — 重构（不改变外部行为）
+- `style` — 样式/UI 调整（不涉及逻辑）
+- `chore` — 构建、依赖、配置等杂项
+- `docs` — 文档更新
+
+### 规则
+
+- 标题行用**英文**，简洁概括本次改动的核心
+- Body 部分先写**中文要点**（给自己看），再写**英文摘要**（给协作者 / GitHub 看）
+- 一个 commit 聚焦一件事；如果 body 需要超过 8 个要点，考虑拆分 commit
+- 不要在 commit message 里包含文件路径列表（git diff 已经有了）

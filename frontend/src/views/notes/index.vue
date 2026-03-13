@@ -5,12 +5,12 @@
       class="shrink-0 overflow-hidden transition-[width] duration-300"
       :class="listVisible ? 'w-52' : 'w-0'"
     >
-      <div class="w-52 h-full flex flex-col border-r border-base-300">
-        <div class="p-2 border-b border-base-300">
+      <div class="w-52 h-full flex flex-col border-r border-border">
+        <div class="p-2 border-b border-border">
           <div class="new-note-wrap">
             <button
               @click="createNote"
-              class="flex items-center w-full h-8 px-3 gap-2 rounded-md text-sm font-medium hover:bg-base-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
+              class="flex items-center w-full h-8 px-3 gap-2 rounded-md text-sm font-medium border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted hover:border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
             >
               <PhPlus :size="14" />
               New Note
@@ -23,31 +23,34 @@
             v-for="id in store.orderedIds"
             :key="id"
             @click="selectNote(id)"
-            class="group relative w-full text-left p-3 transition-all duration-200 cursor-pointer border-b border-base-200/50 hover:bg-base-200/50 focus-visible:outline-none focus-visible:bg-base-200"
-            :class="[id === store.selectedId ? 'bg-base-200 pr-2 pl-4' : 'hover:pl-4']"
+            class="group relative w-full text-left p-3 transition-all duration-200 cursor-pointer border-b border-border/50 hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted"
+            :class="[id === store.selectedId ? 'bg-muted/80 pr-2 pl-4' : 'hover:pl-4']"
           >
             <!-- 选中状态左侧指示线 -->
             <div
-              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-primary transition-all duration-300"
-              :class="id === store.selectedId ? 'h-3/4 opacity-100' : 'h-0 opacity-0'"
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full bg-primary transition-all duration-300"
+              :class="id === store.selectedId ? 'h-3/5 opacity-100' : 'h-0 opacity-0'"
             ></div>
 
             <div class="flex items-center justify-between gap-2 mb-1">
-              <div class="text-sm font-medium truncate group-hover:text-primary transition-colors">
+              <div
+                class="text-sm truncate transition-colors"
+                :class="id === store.selectedId ? 'font-semibold text-foreground' : 'font-medium group-hover:text-primary'"
+              >
                 {{ store.notesById[id]?.title || 'Untitled' }}
               </div>
-              <div class="text-[10px] text-base-content/40 shrink-0">
+              <div class="text-[10px] text-muted-foreground/70 shrink-0">
                 {{ formatDate(store.notesById[id]?.updated_at) }}
               </div>
             </div>
-            <div class="text-xs text-base-content/50 truncate">
-              {{ store.notesById[id]?.preview || 'No content' }}
+            <div class="text-xs text-muted-foreground truncate">
+              {{ stripHtml(store.notesById[id]?.preview) || 'No content' }}
             </div>
           </button>
 
           <div
             v-if="store.orderedIds.length === 0"
-            class="px-3 py-6 text-xs text-base-content/40 text-center"
+            class="px-3 py-6 text-xs text-muted-foreground/70 text-center"
           >
             No notes yet
           </div>
@@ -57,10 +60,10 @@
 
     <!-- 分隔条：hover 显示折叠把手 -->
     <div class="w-3 shrink-0 relative group/divider flex items-center justify-center">
-      <div class="absolute inset-y-0 left-1/2 w-px bg-base-300 -translate-x-1/2" />
+      <div class="absolute inset-y-0 left-1/2 w-px bg-border -translate-x-1/2" />
       <button
         @click="listVisible = !listVisible"
-        class="relative z-10 flex items-center justify-center w-4 h-7 rounded-full bg-base-100 border border-base-300 shadow-sm opacity-0 group-hover/divider:opacity-100 transition-opacity duration-200 hover:bg-base-200 cursor-pointer"
+        class="relative z-10 flex items-center justify-center w-4 h-7 rounded-full bg-background border border-border shadow-sm opacity-0 group-hover/divider:opacity-100 transition-opacity duration-200 hover:bg-muted cursor-pointer"
       >
         <PhCaretLeft v-if="listVisible" :size="10" />
         <PhCaretRight v-else :size="10" />
@@ -74,9 +77,9 @@
         <!-- Toolbar -->
         <div
           v-if="store.selectedId"
-          class="h-10 shrink-0 flex items-center px-4 gap-2 border-b border-base-200"
+          class="h-10 shrink-0 flex items-center px-4 gap-2 border-b border-border"
         >
-          <span class="text-sm font-medium text-base-content/70 truncate flex-1">
+          <span class="text-sm font-semibold text-foreground truncate flex-1">
             {{ store.notesById[store.selectedId]?.title || 'Untitled' }}
           </span>
 
@@ -103,7 +106,7 @@
 
             <!-- 保存失败 (红色警告) -->
             <transition name="fade">
-              <span v-if="store.saving === 'error'" class="flex items-center gap-1.5 text-error">
+              <span v-if="store.saving === 'error'" class="flex items-center gap-1.5 text-destructive">
                 Save failed
               </span>
             </transition>
@@ -111,7 +114,7 @@
 
           <button
             @click="confirmDelete"
-            class="flex items-center justify-center size-7 rounded-md text-error/60 hover:text-error hover:bg-error/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/50 shrink-0 cursor-pointer"
+            class="flex items-center justify-center size-7 rounded-md text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/50 shrink-0 cursor-pointer"
             aria-label="Delete note"
           >
             <PhTrash :size="20" />
@@ -122,7 +125,7 @@
             :class="
               aiVisible
                 ? 'text-primary bg-primary/10 hover:bg-primary/20'
-                : 'text-base-content/60 hover:text-base-content hover:bg-base-200'
+                : 'text-muted-foreground/80 hover:text-foreground hover:bg-muted'
             "
             aria-label="Toggle AI panel"
           >
@@ -137,12 +140,12 @@
           </div>
           <div v-else class="flex flex-col items-center justify-center h-full text-center px-4">
             <div
-              class="flex items-center justify-center size-16 rounded-full bg-base-200/50 text-base-content/20 mb-4"
+              class="flex items-center justify-center size-16 rounded-full bg-muted/50 text-foreground/20 mb-4"
             >
               <PhNoteBlank :size="32" weight="light" />
             </div>
-            <h3 class="text-sm font-medium text-base-content/70 mb-1">No Note Selected</h3>
-            <p class="text-xs text-base-content/40 max-w-xs mb-6 leading-relaxed">
+            <h3 class="text-sm font-medium text-foreground/70 mb-1">No Note Selected</h3>
+            <p class="text-xs text-muted-foreground/70 max-w-xs mb-6 leading-relaxed">
               Choose a note from the sidebar or create a new one to start writing.
             </p>
             <button
@@ -161,33 +164,38 @@
         class="shrink-0 overflow-hidden transition-[width] duration-300"
         :class="aiVisible ? 'w-100' : 'w-0'"
       >
-        <div class="w-100 h-full border-l border-base-200"></div>
+        <div class="w-100 h-full border-l border-border"></div>
       </div>
     </div>
 
-    <!-- 删除确认 modal -->
-    <dialog ref="deleteModalRef" class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-base">Delete note?</h3>
-        <p class="py-3 text-sm text-base-content/60">This action cannot be undone.</p>
-        <div class="modal-action">
-          <form method="dialog">
-            <button
-              class="flex items-center justify-center h-8 px-4 rounded-md text-sm font-medium hover:bg-base-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-base-content/50 cursor-pointer"
-            >
-              Cancel
-            </button>
-          </form>
-          <button @click="doDelete" class="btn btn-error btn-sm">Delete</button>
-        </div>
-      </div>
-      <form method="dialog" class="modal-backdrop"><button>close</button></form>
-    </dialog>
+        <!-- 删除确认 modal -->
+    <AlertDialog v-model:open="showDeleteDialog">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete note?</AlertDialogTitle>
+          <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" @click="doDelete">Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onBeforeUnmount, watch, nextTick, onMounted } from 'vue'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Crepe } from '@milkdown/crepe'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
@@ -212,7 +220,7 @@ const listVisible = ref(true)
 const aiVisible = ref(false)
 
 const editorRef = ref<HTMLElement>()
-const deleteModalRef = ref<HTMLDialogElement>()
+const showDeleteDialog = ref(false)
 
 let crepe: Crepe | null = null
 let pollTimer: ReturnType<typeof setInterval> | null = null
@@ -222,6 +230,12 @@ const formatDate = (iso?: string) => {
   if (!iso) return ''
   const d = new Date(iso)
   return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
+}
+
+/** 去除 HTML 标签，用于安全展示 preview 文本 */
+const stripHtml = (html?: string) => {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '').trim()
 }
 
 // ── 代码块交互（不变）─────────────────────────────────────
@@ -298,10 +312,10 @@ const createNote = async () => {
   }
 }
 
-const confirmDelete = () => deleteModalRef.value?.showModal()
+const confirmDelete = () => showDeleteDialog.value = true
 
 const doDelete = async () => {
-  deleteModalRef.value?.close()
+  showDeleteDialog.value = false
   if (store.selectedId) await store.remove(store.selectedId)
 }
 
@@ -358,12 +372,12 @@ onBeforeUnmount(() => {
 /* ── Milkdown / Crepe 主题覆盖 ── */
 .milkdown {
   --crepe-color-background: #f4f3ee;
-  --crepe-color-on-background: var(--color-base-content);
+  --crepe-color-on-background: var(--foreground);
   --crepe-color-surface: #ece9e3;
   --crepe-color-surface-low: #e2dfd9;
-  --crepe-color-on-surface: var(--color-base-content);
-  --crepe-color-outline: var(--color-base-content);
-  --crepe-color-primary: var(--color-primary);
+  --crepe-color-on-surface: var(--foreground);
+  --crepe-color-outline: var(--foreground);
+  --crepe-color-primary: var(--primary);
   --crepe-color-hover: #e2dfd9;
   --crepe-color-selected: #d8d5cf;
   --crepe-font-default: ui-sans-serif, system-ui, sans-serif;
@@ -408,20 +422,20 @@ onBeforeUnmount(() => {
 /* ── 图标颜色：milkdown-icon ── */
 .milkdown .milkdown-icon svg,
 .milkdown .milkdown-icon svg * {
-  fill: var(--color-base-content) !important;
-  color: var(--color-base-content) !important;
+  fill: var(--foreground) !important;
+  color: var(--foreground) !important;
 }
 
 /* ── 图标颜色：浮层组件（block-handle / toolbar / slash 等）── */
 .milkdown > *:not(.ProseMirror) svg,
 .milkdown > *:not(.ProseMirror) svg * {
-  fill: var(--color-base-content) !important;
-  color: var(--color-base-content) !important;
+  fill: var(--foreground) !important;
+  color: var(--foreground) !important;
 }
 
 /* ── 列表 label 颜色继承 ── */
 .milkdown .milkdown-list-item-block .label-wrapper {
-  color: var(--color-base-content) !important;
+  color: var(--foreground) !important;
 }
 
 /* ── 代码块头部：始终可见，无背景 ── */
@@ -455,7 +469,7 @@ onBeforeUnmount(() => {
   background: transparent !important;
   border: none;
   cursor: pointer;
-  color: var(--color-base-content);
+  color: var(--foreground);
   border-radius: 4px;
 }
 .milkdown .copy-button:hover {
@@ -497,7 +511,7 @@ onBeforeUnmount(() => {
   width: 14px;
   height: 14px;
   align-self: center;
-  background-color: var(--color-base-content);
+  background-color: var(--foreground);
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,165.66a8,8,0,0,1-11.32,0L128,91.31,53.66,165.66a8,8,0,0,1-11.32-11.32l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,213.66,165.66Z'/%3E%3C/svg%3E")
     no-repeat center / contain;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,165.66a8,8,0,0,1-11.32,0L128,91.31,53.66,165.66a8,8,0,0,1-11.32-11.32l80-80a8,8,0,0,1,11.32,0l80,80A8,8,0,0,1,213.66,165.66Z'/%3E%3C/svg%3E")
@@ -548,8 +562,8 @@ onBeforeUnmount(() => {
   background: conic-gradient(
     from var(--nna),
     transparent 0%,
-    var(--color-primary) 25%,
-    color-mix(in oklch, var(--color-primary) 60%, white) 50%,
+    var(--primary) 25%,
+    color-mix(in oklch, var(--primary) 60%, white) 50%,
     transparent 70%
   );
   -webkit-mask:
@@ -596,7 +610,7 @@ onBeforeUnmount(() => {
   transition: background-color 0.15s;
 }
 .milkdown .ProseMirror > *:hover {
-  background-color: var(--color-base-200);
+  background-color: var(--muted);
 }
 
 /* ── Block handle：缩小图标 ── */
@@ -614,7 +628,7 @@ onBeforeUnmount(() => {
 
 /* ── CodeMirror 纯文本颜色 ── */
 .milkdown .cm-content {
-  color: var(--color-base-content);
+  color: var(--foreground);
 }
 
 /* Vue transition 过渡类 */

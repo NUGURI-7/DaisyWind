@@ -2,11 +2,11 @@
   <div class="h-screen flex flex-col">
     <!-- Navbar -->
     <div class="relative shrink-0 z-10">
-      <header class="h-12 bg-base-100 flex items-center px-4">
-        <span class="text-sm font-medium text-base-content/50">{{ pageTitle }}</span>
+      <header class="h-12 bg-background flex items-center px-4">
+        <span class="text-sm font-medium text-muted-foreground">{{ pageTitle }}</span>
       </header>
       <!-- 底部渐变淡出遮罩 -->
-      <div class="absolute inset-x-0 top-full h-8 pointer-events-none bg-gradient-to-b from-base-100 to-transparent"></div>
+      <div class="absolute inset-x-0 top-full h-8 pointer-events-none bg-gradient-to-b from-background to-transparent"></div>
     </div>
     <!-- 可滚动内容区 -->
     <div class="flex-1 overflow-y-auto">

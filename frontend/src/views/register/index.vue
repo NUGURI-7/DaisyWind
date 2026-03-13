@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col h-screen bg-base-100 overflow-hidden">
-    <div class="navbar px-6 animate-fade-in">
-      <div class="navbar-start">
+  <div class="flex flex-col h-screen bg-background overflow-hidden text-foreground">
+    <div class="flex items-center px-6 h-14 animate-fade-in">
+      <div class="flex items-center">
         <img src="/claude-icon.svg" class="mr-2 size-8" alt="logo" />
         <span class="text-2xl font-bold tracking-tight">DaisyWind</span>
       </div>
@@ -22,28 +22,25 @@
             />
           </div>
 
-          <!-- 保留 🌸 emoji -->
-          <h1 class="text-2xl font-bold text-center animate-slide-up stagger-1">
-            Create Account 🌸
+          <!-- 标题带 animate-slide-up + stagger-1 -->
+          <h1 class="text-2xl font-bold text-center animate-slide-up stagger-1 tracking-tight">
+            Create an Account
           </h1>
 
-          <div
-            class="card bg-base-200/70 backdrop-blur-md shadow-2xl border border-base-300/50 mb-26 animate-scale-in stagger-2 transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+          <Card
+            class="bg-card/70 backdrop-blur-md shadow-lg border-border mb-26 animate-scale-in stagger-2 transition-shadow hover:shadow-xl"
             style="transition-duration: var(--transition-normal)"
           >
-            <div class="card-body p-6 space-y-4">
+            <CardContent class="p-6 space-y-4">
               <form @submit.prevent="handleRegister" class="space-y-4">
-                <!--
-                  Register 有 4 个字段，stagger 从 2 到 5
-                  每个间隔 80ms，4 个字段总共 320ms 的交错时间
-                -->
-                <fieldset class="fieldset animate-slide-up stagger-2">
-                  <legend class="fieldset-legend">Username</legend>
-                  <input
+                <div class="space-y-1.5 animate-slide-up stagger-2">
+                  <Label for="username">Username</Label>
+                  <Input
+                    id="username"
                     v-model="form.username"
                     type="text"
                     placeholder="Enter your username"
-                    class="input input-bordered w-full transition-colors focus:border-base-content/30"
+                    class="w-full transition-colors"
                     style="transition-duration: var(--transition-fast)"
                     required
                     minlength="3"
@@ -51,68 +48,75 @@
                     pattern="[a-zA-Z0-9_\-]+"
                     title="Only letters, numbers, underscores and hyphens"
                   />
-                </fieldset>
-                <fieldset class="fieldset animate-slide-up stagger-3">
-                  <legend class="fieldset-legend">Nickname</legend>
-                  <input
+                </div>
+                <div class="space-y-1.5 animate-slide-up stagger-3">
+                  <Label for="nick_name">Nickname</Label>
+                  <Input
+                    id="nick_name"
                     v-model="form.nick_name"
                     type="text"
                     placeholder="Enter your nickname"
-                    class="input input-bordered w-full transition-colors focus:border-base-content/30"
+                    class="w-full transition-colors"
                     style="transition-duration: var(--transition-fast)"
                     required
                     maxlength="30"
                   />
-                </fieldset>
-                <fieldset class="fieldset animate-slide-up stagger-4">
-                  <legend class="fieldset-legend">Email</legend>
-                  <input
+                </div>
+                <div class="space-y-1.5 animate-slide-up stagger-4">
+                  <Label for="email">Email</Label>
+                  <Input
+                    id="email"
                     v-model="form.email"
                     type="email"
                     placeholder="Enter your email"
-                    class="input input-bordered w-full transition-colors focus:border-base-content/30"
+                    class="w-full transition-colors"
                     style="transition-duration: var(--transition-fast)"
                     required
                   />
-                </fieldset>
-                <fieldset class="fieldset animate-slide-up stagger-5">
-                  <legend class="fieldset-legend">Password</legend>
-                  <input
+                </div>
+                <div class="space-y-1.5 animate-slide-up stagger-5">
+                  <Label for="password">Password</Label>
+                  <Input
+                    id="password"
                     v-model="form.password"
                     type="password"
                     placeholder="Enter your password"
-                    class="input input-bordered w-full transition-colors focus:border-base-content/30"
+                    class="w-full transition-colors"
                     style="transition-duration: var(--transition-fast)"
                     required
                     minlength="6"
                     maxlength="50"
                   />
-                </fieldset>
+                </div>
 
-                <p v-if="errorMsg" class="text-error text-sm text-center animate-slide-down">
+                <p v-if="errorMsg" class="text-destructive text-sm text-center animate-slide-down">
                   {{ errorMsg }}
                 </p>
 
-                <button
+                <Button
                   type="submit"
-                  class="btn btn-neutral btn-block animate-slide-up stagger-5 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                  class="w-full animate-slide-up stagger-5 transition-all hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
                   style="transition-duration: var(--transition-fast)"
                   :disabled="loading"
                 >
-                  <span v-if="loading" class="loading loading-spinner loading-sm"></span>
+                  <PhSpinner v-if="loading" class="animate-spin mr-2" />
                   <span v-else>Sign up</span>
-                </button>
+                </Button>
               </form>
 
-              <div class="divider my-0 text-xs text-base-content/40">or</div>
-              <p class="text-center text-sm animate-fade-in stagger-5">
+              <div class="relative flex items-center py-2">
+                <div class="flex-1"><Separator /></div>
+                <span class="mx-4 text-xs text-muted-foreground">or</span>
+                <div class="flex-1"><Separator /></div>
+              </div>
+              <p class="text-center text-sm animate-fade-in stagger-5 text-muted-foreground">
                 Already have an account?
-                <router-link to="/login" class="link link-hover font-medium underline-offset-2">
+                <router-link to="/login" class="font-medium text-primary hover:underline underline-offset-2">
                   Sign in
                 </router-link>
               </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -125,7 +129,7 @@
           loop
           muted
           playsinline
-          class="max-w-full mb-14 max-h-full object-cover rounded-2xl shadow-[0_4px_20px_0_hsl(var(--always-black)/4%)]"
+          class="max-w-full mb-14 max-h-full object-cover rounded-2xl shadow-xl border border-border"
           style="object-position: 80% 20%"
         ></video>
       </div>
@@ -138,6 +142,13 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { userAuthStore } from '@/stores/auth'
 import { toast } from 'vue-sonner'
+import { PhSpinner } from '@phosphor-icons/vue'
+
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
 
 const router = useRouter()
 const authStore = userAuthStore()

@@ -15,5 +15,6 @@
       "runtimeArgs": ["run", "python", "main.py"],
       "port": 8000
     }
-  ]
+  ],
+  "autoVerify": false
 }
