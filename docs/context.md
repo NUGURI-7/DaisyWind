@@ -65,6 +65,13 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-03-14（R2 对象存储前端直传方案：后端完成）
+- 引入了 `boto3` SDK，对接 Cloudflare R2（S3 兼容）对象存储。
+- 放弃了本地存图和 Cookie 鉴权的方案，改为更高级的“前端直传 (Presigned URL)”模式。
+- 新增 `R2Storage` 工具类和 `POST /api/nuguri/v1/media/presigned-url` 接口，后端不再落盘文件，仅颁发具有 5 分钟有效期的 PUT 签名。
+- 增强了文件上传的安全校验，拒绝无后缀名文件，统一使用 UUID 生成文件名。
+- 解决了 Cookie CSRF 和静态资源跨域访问鉴权的问题。
+
 ### 2026-03-13（主题系统：12 主题色 + Light/Dark 切换）
 - 新增 `composables/useTheme.ts`：管理主题状态（theme name + dark mode），localStorage 持久化。
 - 新增 `components/ThemeSwitcher.vue`：色块网格 + Light/Dark 切换面板。

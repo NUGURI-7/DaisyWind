@@ -27,6 +27,15 @@ class Settings(BaseSettings):
 
     # 文件配置
     STATIC_DIR: str = "static"
+    MEDIA_DIR: str = "data/media"  # 新增：用户上传的媒体文件存放路径
+
+    # ==================== 对象存储 (R2/S3) 配置 ====================
+    R2_ENDPOINT: str = ""           # 例: https://<AccountID>.r2.cloudflarestorage.com
+    R2_ACCESS_KEY_ID: str = ""
+    R2_SECRET_ACCESS_KEY: str = ""
+    R2_BUCKET_NAME: str = ""        # 例: daisywind
+    R2_PUBLIC_URL: str = ""         # 例: https://pub-xxx.r2.dev (留空表示拼接方式访问)
+
 
     # ==================== Redis 配置 ====================
     REDIS_HOST: str = "127.0.0.1"

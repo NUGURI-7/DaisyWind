@@ -5,7 +5,7 @@
     @date: 2026/2/3 20:49
     @desc:
 """
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 
 from backend.app.core.depends import get_user_service, get_current_user
 from backend.app.core.response import success
@@ -19,9 +19,20 @@ router = APIRouter()
 @router.post("/login", summary="用户登陆")
 async def login(
         login_data: UserLogin,
+        response: Response,
         user_service: UserService = Depends(get_user_service)
 ):
     result = await user_service.login(login_data)
+
+    access_token = result["access_token"]
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        max_age=3600 * 24 * 7, # 7天过期
+        samesite="lax",
+    )
+
     return success(data=TokenResponse(
         access_token = result["access_token"],
         user=UserResponse.model_validate(result["user"])
