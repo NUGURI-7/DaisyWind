@@ -81,7 +81,7 @@ const { theme, isDark, setTheme, setDark } = useTheme()
 /** 根据 oklch 亮度决定 check mark 颜色 */
 function contrastColor(oklch: string): string {
   const match = oklch.match(/oklch\(([\d.]+)/)
-  const lightness = match ? parseFloat(match[1]) : 0.5
+  const lightness = match ? parseFloat(match[1]!) : 0.5
   return lightness > 0.6 ? 'oklch(0.2 0 0)' : 'oklch(0.98 0 0)'
 }
 </script>

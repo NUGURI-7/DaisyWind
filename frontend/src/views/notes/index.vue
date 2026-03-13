@@ -631,6 +631,57 @@ onBeforeUnmount(() => {
   color: var(--foreground);
 }
 
+/* ── CodeMirror 语法高亮 — Catppuccin Latte ── */
+.milkdown .cm-editor {
+  /* keyword: if / else / return / const / let — 薰衣草紫 Mauve */
+  & .tok-keyword { color: #8839ef !important; }
+  /* string: "hello" / 'world' — 绿色 Green */
+  & .tok-string,
+  & .tok-string2 { color: #40a02b !important; }
+  /* number: 42 / 3.14 — 蜜桃色 Peach */
+  & .tok-number { color: #fe640b !important; }
+  /* bool / null: true / false / null — 蜜桃色 Peach */
+  & .tok-bool,
+  & .tok-null { color: #fe640b !important; }
+  /* comment: // ... / /* ... */ — 灰色 Overlay0 */
+  & .tok-comment { color: #9ca0b0 !important; font-style: italic; }
+  /* propertyName: JSON key / object key — 蓝色 Blue */
+  & .tok-propertyName { color: #1e66f5 !important; }
+  /* typeName: class name / type — 黄色 Yellow */
+  & .tok-typeName { color: #df8e1d !important; }
+  /* function / definition name — 蓝色 Blue */
+  & .tok-definition,
+  & .tok-function { color: #1e66f5 !important; }
+  /* variable — 正文色 Text */
+  & .tok-variableName { color: #4c4f69 !important; }
+  /* special variable: this / self — 红色 Red */
+  & .tok-variableName.tok-special { color: #d20f39 !important; }
+  /* operator: + - = === — Subtext0 偏暗 */
+  & .tok-operator { color: #179299 !important; }
+  /* punctuation: {} [] () , ; — Overlay1 */
+  & .tok-punctuation { color: #8c8fa1 !important; }
+  /* tag name (HTML/XML) — 红色 Maroon */
+  & .tok-tagName { color: #e64553 !important; }
+  /* attribute name (HTML) — 黄色 Yellow */
+  & .tok-attributeName { color: #df8e1d !important; }
+  /* attribute value (HTML) — 绿色 Green */
+  & .tok-attributeValue { color: #40a02b !important; }
+  /* meta / preprocessor — 粉色 Pink */
+  & .tok-meta { color: #ea76cb !important; }
+  /* heading (Markdown) — 红色 Red + bold */
+  & .tok-heading { color: #d20f39 !important; font-weight: 600; }
+  /* link (URL) — 蓝色 Sapphire */
+  & .tok-link,
+  & .tok-url { color: #209fb5 !important; }
+  /* atom (CSS value, special literal) — 蜜桃 Peach */
+  & .tok-atom { color: #fe640b !important; }
+  /* regexp — 粉色 Pink */
+  & .tok-regexp { color: #ea76cb !important; }
+  /* selection / cursor */
+  & .cm-selectionBackground { background-color: #bcc0cc60 !important; }
+  & .cm-cursor { border-left-color: #dc8a78 !important; }
+}
+
 /* Vue transition 过渡类 */
 .fade-enter-active,
 .fade-leave-active {
