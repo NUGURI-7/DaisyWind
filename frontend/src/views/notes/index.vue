@@ -3,14 +3,14 @@
     <!-- 左侧笔记列表 -->
     <div
       class="shrink-0 overflow-hidden transition-[width] duration-300"
-      :class="listVisible ? 'w-52' : 'w-0'"
+      :class="listVisible ? 'w-64' : 'w-0'"
     >
-      <div class="w-52 h-full flex flex-col border-r border-border">
-        <div class="p-2 border-b border-border">
-          <div class="new-note-wrap">
+      <div class="w-64 h-full flex flex-col border-r border-border bg-sidebar/30">
+        <div class="h-14 flex items-center px-4 border-b border-border/40 shrink-0">
+          <div class="new-note-wrap w-full">
             <button
               @click="createNote"
-              class="flex items-center w-full h-8 px-3 gap-2 rounded-md text-sm font-medium border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-muted hover:border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
+              class="flex items-center w-full h-9 px-3 gap-2 rounded-md text-sm font-medium border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
             >
               <PhPlus :size="14" />
               New Note
@@ -77,7 +77,7 @@
         <!-- Toolbar -->
         <div
           v-if="store.selectedId"
-          class="h-10 shrink-0 flex items-center px-4 gap-2 border-b border-border"
+          class="h-14 shrink-0 flex items-center px-6 gap-2 border-b border-border/40"
         >
           <span class="text-sm font-semibold text-foreground truncate flex-1">
             {{ store.notesById[store.selectedId]?.title || 'Untitled' }}

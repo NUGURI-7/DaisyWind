@@ -1,12 +1,10 @@
 <template>
-  <div class="h-screen flex flex-col">
+  <div class="h-screen flex flex-col bg-background">
     <!-- Navbar -->
-    <div class="relative shrink-0 z-10">
-      <header class="h-12 bg-background flex items-center px-4">
-        <span class="text-sm font-medium text-muted-foreground">{{ pageTitle }}</span>
+    <div class="relative shrink-0 z-10 border-b border-border/40">
+      <header class="h-14 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center px-6">
+        <span class="text-sm font-semibold text-foreground tracking-tight">{{ pageTitle }}</span>
       </header>
-      <!-- 底部渐变淡出遮罩 -->
-      <div class="absolute inset-x-0 top-full h-8 pointer-events-none bg-gradient-to-b from-background to-transparent"></div>
     </div>
     <!-- 可滚动内容区 -->
     <div class="flex-1 overflow-y-auto">
