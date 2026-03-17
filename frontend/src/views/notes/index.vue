@@ -28,14 +28,18 @@
           >
             <!-- 选中状态左侧指示线 -->
             <div
-              class="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full bg-primary transition-all duration-300"
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 rounded-r-full bg-primary transition-all duration-300"
               :class="id === store.selectedId ? 'h-3/5 opacity-100' : 'h-0 opacity-0'"
             ></div>
 
             <div class="flex items-center justify-between gap-2 mb-1">
               <div
                 class="text-sm truncate transition-colors"
-                :class="id === store.selectedId ? 'font-semibold text-foreground' : 'font-medium group-hover:text-primary'"
+                :class="
+                  id === store.selectedId
+                    ? 'font-semibold text-foreground'
+                    : 'font-medium group-hover:text-primary'
+                "
               >
                 {{ store.notesById[id]?.title || 'Untitled' }}
               </div>
@@ -106,7 +110,10 @@
 
             <!-- 保存失败 (红色警告) -->
             <transition name="fade">
-              <span v-if="store.saving === 'error'" class="flex items-center gap-1.5 text-destructive">
+              <span
+                v-if="store.saving === 'error'"
+                class="flex items-center gap-1.5 text-destructive"
+              >
                 Save failed
               </span>
             </transition>
@@ -168,7 +175,7 @@
       </div>
     </div>
 
-        <!-- 删除确认 modal -->
+    <!-- 删除确认 modal -->
     <AlertDialog v-model:open="showDeleteDialog">
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -197,6 +204,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Crepe } from '@milkdown/crepe'
+import mediaApi from '@/api/media'
+import { uploadConfig, upload } from '@milkdown/kit/plugin/upload'
+import type { Node } from '@milkdown/kit/prose/model'
+import type { Ctx } from '@milkdown/kit/ctx'
+import { toast } from 'vue-sonner'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
 import {
@@ -245,11 +257,13 @@ const handleEditorKeydown = (e: KeyboardEvent) => {
     const active = document.activeElement as HTMLElement
     const picker = active?.closest('.language-picker')
     if (picker) {
-      const focusable = Array.from(picker.querySelectorAll<HTMLElement>('input.search-input, li.language-list-item'))
+      const focusable = Array.from(
+        picker.querySelectorAll<HTMLElement>('input.search-input, li.language-list-item'),
+      )
       if (!focusable.length) return
-      
+
       const currentIndex = focusable.indexOf(active)
-      
+
       if (e.key === 'ArrowDown') {
         e.preventDefault()
         const nextIndex = (currentIndex + 1) % focusable.length
@@ -260,7 +274,7 @@ const handleEditorKeydown = (e: KeyboardEvent) => {
         focusable[prevIndex]?.focus()
       } else if (e.key === 'Enter' && active.tagName.toLowerCase() === 'input') {
         e.preventDefault()
-        const firstItem = focusable.find(el => el.tagName.toLowerCase() === 'li')
+        const firstItem = focusable.find((el) => el.tagName.toLowerCase() === 'li')
         if (firstItem) {
           firstItem.click()
         }
@@ -311,7 +325,67 @@ const initEditor = async (content: string) => {
   if (!editorRef.value) return
   editorRef.value.innerHTML = ''
 
-  crepe = new Crepe({ root: editorRef.value, defaultValue: content })
+  const handleUpload = async (file: File) => {
+    try {
+      const { data } = await mediaApi.getPresignedUrl(file.name, file.type)
+      if (!data) throw new Error('获取签名失败')
+
+      const { upload_url, public_url } = data
+
+      const res = await fetch(upload_url, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      })
+      if (!res.ok) throw new Error('oss error')
+      return public_url
+    } catch (error) {
+      console.error('Image upload failed:', error)
+      toast.error('图片上传失败')
+      throw error // 把错误抛回去，Crepe 会结束上传 loading
+    }
+  }
+
+  crepe = new Crepe({
+    root: editorRef.value,
+    defaultValue: content,
+    featureConfigs: {
+      [Crepe.Feature.ImageBlock]: {
+        onUpload: handleUpload,
+        inlineOnUpload: handleUpload,
+        blockOnUpload: handleUpload,
+      },
+    },
+  })
+
+  crepe.editor.use(upload).config((ctx: Ctx) => {
+    ctx.update(uploadConfig.key, (prev) => ({
+      ...prev,
+      // 粘贴或拖拽文件时，Milkdown 会把所有的 File 对象扔给 uploader
+      uploader: async (files: FileList, schema: any) => {
+        const nodes: Node[] = []
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+
+          try {
+            const url = await handleUpload(file!)
+
+            if (file?.type.startsWith('image/')) {
+              nodes.push(schema.nodes.image.createAndFill({ src: url, alt: file.name }) as Node)
+            } else {
+              const textNode = schema.text(file?.name)
+              const linkMark = schema.marks.link.create({ herf: url, title: file?.name })
+              nodes.push(textNode.mark([linkMark]) as Node)
+            }
+          } catch (e) {
+            console.error('Drag/Paste upload failed', e)
+          }
+        }
+        return nodes
+      },
+    }))
+  })
+
   await crepe.create()
   editorRef.value.querySelector<HTMLElement>('.ProseMirror')?.setAttribute('spellcheck', 'false')
   editorRef.value.addEventListener('click', handleEditorClick)
@@ -344,7 +418,7 @@ const createNote = async () => {
   }
 }
 
-const confirmDelete = () => showDeleteDialog.value = true
+const confirmDelete = () => (showDeleteDialog.value = true)
 
 const doDelete = async () => {
   showDeleteDialog.value = false
@@ -666,52 +740,98 @@ onBeforeUnmount(() => {
 /* ── CodeMirror 语法高亮 — Catppuccin Latte ── */
 .milkdown .cm-editor {
   /* keyword: if / else / return / const / let — 薰衣草紫 Mauve */
-  & .tok-keyword { color: #8839ef !important; }
+  & .tok-keyword {
+    color: #8839ef !important;
+  }
   /* string: "hello" / 'world' — 绿色 Green */
   & .tok-string,
-  & .tok-string2 { color: #40a02b !important; }
+  & .tok-string2 {
+    color: #40a02b !important;
+  }
   /* number: 42 / 3.14 — 蜜桃色 Peach */
-  & .tok-number { color: #fe640b !important; }
+  & .tok-number {
+    color: #fe640b !important;
+  }
   /* bool / null: true / false / null — 蜜桃色 Peach */
   & .tok-bool,
-  & .tok-null { color: #fe640b !important; }
-  /* comment: // ... / /* ... */ — 灰色 Overlay0 */
-  & .tok-comment { color: #9ca0b0 !important; font-style: italic; }
+  & .tok-null {
+    color: #fe640b !important;
+  }
+  /* comment: // ... / /* ... */
+  — 灰色 Overlay0 */ & .tok-comment {
+    color: #9ca0b0 !important;
+    font-style: italic;
+  }
   /* propertyName: JSON key / object key — 蓝色 Blue */
-  & .tok-propertyName { color: #1e66f5 !important; }
+  & .tok-propertyName {
+    color: #1e66f5 !important;
+  }
   /* typeName: class name / type — 黄色 Yellow */
-  & .tok-typeName { color: #df8e1d !important; }
+  & .tok-typeName {
+    color: #df8e1d !important;
+  }
   /* function / definition name — 蓝色 Blue */
   & .tok-definition,
-  & .tok-function { color: #1e66f5 !important; }
+  & .tok-function {
+    color: #1e66f5 !important;
+  }
   /* variable — 正文色 Text */
-  & .tok-variableName { color: #4c4f69 !important; }
+  & .tok-variableName {
+    color: #4c4f69 !important;
+  }
   /* special variable: this / self — 红色 Red */
-  & .tok-variableName.tok-special { color: #d20f39 !important; }
+  & .tok-variableName.tok-special {
+    color: #d20f39 !important;
+  }
   /* operator: + - = === — Subtext0 偏暗 */
-  & .tok-operator { color: #179299 !important; }
+  & .tok-operator {
+    color: #179299 !important;
+  }
   /* punctuation: {} [] () , ; — Overlay1 */
-  & .tok-punctuation { color: #8c8fa1 !important; }
+  & .tok-punctuation {
+    color: #8c8fa1 !important;
+  }
   /* tag name (HTML/XML) — 红色 Maroon */
-  & .tok-tagName { color: #e64553 !important; }
+  & .tok-tagName {
+    color: #e64553 !important;
+  }
   /* attribute name (HTML) — 黄色 Yellow */
-  & .tok-attributeName { color: #df8e1d !important; }
+  & .tok-attributeName {
+    color: #df8e1d !important;
+  }
   /* attribute value (HTML) — 绿色 Green */
-  & .tok-attributeValue { color: #40a02b !important; }
+  & .tok-attributeValue {
+    color: #40a02b !important;
+  }
   /* meta / preprocessor — 粉色 Pink */
-  & .tok-meta { color: #ea76cb !important; }
+  & .tok-meta {
+    color: #ea76cb !important;
+  }
   /* heading (Markdown) — 红色 Red + bold */
-  & .tok-heading { color: #d20f39 !important; font-weight: 600; }
+  & .tok-heading {
+    color: #d20f39 !important;
+    font-weight: 600;
+  }
   /* link (URL) — 蓝色 Sapphire */
   & .tok-link,
-  & .tok-url { color: #209fb5 !important; }
+  & .tok-url {
+    color: #209fb5 !important;
+  }
   /* atom (CSS value, special literal) — 蜜桃 Peach */
-  & .tok-atom { color: #fe640b !important; }
+  & .tok-atom {
+    color: #fe640b !important;
+  }
   /* regexp — 粉色 Pink */
-  & .tok-regexp { color: #ea76cb !important; }
+  & .tok-regexp {
+    color: #ea76cb !important;
+  }
   /* selection / cursor */
-  & .cm-selectionBackground { background-color: #bcc0cc60 !important; }
-  & .cm-cursor { border-left-color: #dc8a78 !important; }
+  & .cm-selectionBackground {
+    background-color: #bcc0cc60 !important;
+  }
+  & .cm-cursor {
+    border-left-color: #dc8a78 !important;
+  }
 }
 
 /* Vue transition 过渡类 */

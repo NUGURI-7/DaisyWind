@@ -7,7 +7,7 @@ export interface PresignedUrlResponse {
   object_name: string
 }
 
-export const getPresignedUrl = (filenmae: string, contentType: string, loading?: Ref<boolean>) =>
-  post('/media/presigned-url', { filenmae, content_type: contentType }, undefined, loading)
+export const getPresignedUrl = (filename: string, contentType: string, loading?: Ref<boolean>) =>
+  post('/media/presigned-url', { filename: filename, content_type: contentType }, undefined, loading)
 
 export default { getPresignedUrl }

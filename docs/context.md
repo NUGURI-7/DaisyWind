@@ -51,7 +51,7 @@
 - Settings 入口已接入 ThemeSwitcher（Popover 弹出，含 12 主题色 + Light/Dark 切换）。
 
 ## 下一步
-- Notes 图片上传方案（Phase Two）：目前图片以 base64 嵌入 content，待接入本地磁盘存储 + Cookie 鉴权 serve。
+- 探索/优化其他交互细节，或继续推进 Chat 模块等其他核心功能。
 
 ## 开发注意事项
 - 项目 UI 统一使用 `@phosphor-icons/vue`，不要引入手写 SVG 或第二套 icon library。
@@ -65,12 +65,12 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
-### 2026-03-17（UI 细节优化与 API 调整）
+### 2026-03-17（UI 细节优化、API 调整与前端图片直传接入）
+- 前端图片上传接入：修复了 `api/media.ts` 中 `getPresignedUrl` 的参数拼写错误，并在 Notes 的 Milkdown (Crepe) 编辑器中全面接入图片直传 OSS (R2) 逻辑（覆盖 ImageBlock、拖拽及粘贴上传），上传成功后自动替换为公共访问链接。
 - Sidebar 动画重构：改用 Tailwind 原生的 `max-w-[200px]`、`opacity-0` 和 `transition-all` 组合，实现更平滑的文本和图标展开/折叠动画。
-- Milkdown 代码块 UI 深度定制：在 `app.css` 中注入了一套抗锯齿和覆盖默认边框、背景、行号的样式，使代码块呈现更纯净的 Claude 风格（无色差浅灰/深灰背景，优化顶部工具栏和语言选择器）。
+- Milkdown 代码块 UI 深度定制：在 `app.css` 中注入了一套抗锯齿和覆盖默认边框、背景、行号的样式，使代码块呈现更纯净的 Claude 风格（无色差浅灰/深灰背景，优化顶部工具栏和语言选择器）；同时优化了 CodeMirror 语法高亮样式排版。
 - Editor 键盘交互增强：在 Notes 编辑器中增加了语言选择器的键盘导航（`ArrowUp`、`ArrowDown`、`Enter`）支持。
 - API 规范化：将后端的 `/current_user` 路由和前端调用统一修改为 `/current-user`；移除了后端未使用的 `play.router`。
-- 对象存储接口准备：前端新增 `api/media.ts`，为后续 R2 直传预留 `getPresignedUrl` 方法。
 
 ### 2026-03-14（R2 对象存储前端直传方案：后端完成）
 - 引入了 `boto3` SDK，对接 Cloudflare R2（S3 兼容）对象存储。
