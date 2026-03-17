@@ -37,7 +37,7 @@ const postRegister = (
  * */
 
 const getCurrentUser = (loading?: Ref<boolean>) => {
-  return get('/user/current_user', undefined, loading)
+  return get('/user/current-user', undefined, loading)
 }
 
 

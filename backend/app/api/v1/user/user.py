@@ -50,7 +50,7 @@ async def register(
         message="注册成功"
     )
 
-@router.get("/current_user", summary="获取当前用户信息")
+@router.get("/current-user", summary="获取当前用户信息")
 async def get_current_user(
         current_user: User = Depends(get_current_user)
 ):

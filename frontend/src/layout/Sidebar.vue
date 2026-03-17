@@ -6,7 +6,7 @@
        这样 dropdown 可以向上弹出不被裁剪
        （注意：overflow-x: clip 和 overflow-x: hidden 的关键区别是
         clip 可以独立控制单轴，hidden 会把另一轴也变成 auto/scroll）
-    2. 底部容器 group-data-[collapsed]/sidebar:p-0
+    2. 底部容器 
        折叠时去掉 padding，让 btn-square 正好填满 56px 宽度
        之前 p-2（8px×2）让按钮从 8px 开始，56px 的按钮会溢出被裁掉 8px
     3. dropdown 用 <Teleport to="body"> 完全脱离 sidebar 的 overflow 上下文
@@ -36,7 +36,7 @@
       </div>
 
       <span
-        class="font-bold text-lg tracking-tight text-sidebar-foreground group-data-[collapsed]/sidebar:hidden overflow-hidden whitespace-nowrap"
+        class="font-bold text-lg tracking-tight text-sidebar-foreground max-w-[200px] group-data-[collapsed]/sidebar:max-w-0 group-data-[collapsed]/sidebar:opacity-0 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap"
       >
         DaisyWind
       </span>
@@ -45,7 +45,7 @@
       <button
         @click="$emit('toggle')"
         aria-label="close sidebar"
-        class="ml-auto shrink-0 flex items-center justify-center size-8 text-sidebar-foreground rounded-md hover:bg-sidebar-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50 cursor-pointer group-data-[collapsed]/sidebar:hidden"
+        class="ml-auto shrink-0 flex items-center justify-center size-8 text-sidebar-foreground rounded-md hover:bg-sidebar-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50 cursor-pointer max-w-[200px] group-data-[collapsed]/sidebar:max-w-0 group-data-[collapsed]/sidebar:opacity-0 transition-all duration-300 ease-in-out"
       >
         <PhSidebarSimple :size="20" />
       </button>
@@ -63,7 +63,7 @@
             >
               <button
                 @click="$router.push('/chat')"
-                class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors group-data-[collapsed]/sidebar:justify-center group-data-[collapsed]/sidebar:px-0"
+                class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors "
                 :class="isActive
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'"
@@ -71,7 +71,7 @@
               >
                 <PhPlus :size="18" class="shrink-0" />
                 <span
-                  class="sidebar-text group-data-[collapsed]/sidebar:hidden overflow-hidden whitespace-nowrap"
+                  class="sidebar-text max-w-[200px] group-data-[collapsed]/sidebar:max-w-0 group-data-[collapsed]/sidebar:opacity-0 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap"
                 >
                   New Chat
                 </span>
@@ -91,7 +91,7 @@
             >
               <button
                 @click="$router.push('/notes')"
-                class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors group-data-[collapsed]/sidebar:justify-center group-data-[collapsed]/sidebar:px-0"
+                class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors "
                 :class="isActive
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'"
@@ -99,7 +99,7 @@
               >
                 <PhNotePencil :size="18" class="shrink-0" />
                 <span
-                  class="sidebar-text group-data-[collapsed]/sidebar:hidden overflow-hidden whitespace-nowrap"
+                  class="sidebar-text max-w-[200px] group-data-[collapsed]/sidebar:max-w-0 group-data-[collapsed]/sidebar:opacity-0 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap"
                 >
                   Notes
                 </span>
@@ -113,12 +113,12 @@
         <Popover>
           <PopoverTrigger as-child>
             <button
-              class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsed]/sidebar:justify-center group-data-[collapsed]/sidebar:px-0 cursor-pointer"
+              class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground  cursor-pointer"
               :style="{ transitionDuration: 'var(--transition-fast)' }"
             >
               <PhSliders :size="18" class="shrink-0" />
               <span
-                class="sidebar-text group-data-[collapsed]/sidebar:hidden overflow-hidden whitespace-nowrap"
+                class="sidebar-text max-w-[200px] group-data-[collapsed]/sidebar:max-w-0 group-data-[collapsed]/sidebar:opacity-0 transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap"
               >
                 Settings
               </span>
@@ -133,20 +133,20 @@
 
     <!-- 底部用户信息 -->
     <!--
-      group-data-[collapsed]/sidebar:p-0：折叠时去掉 padding
+      ：折叠时去掉 padding
       之前 p-2 在折叠时让按钮偏移 8px，配合 overflow-x-clip 导致右侧 8px 被裁掉
       现在折叠时 padding=0，btn-square(56px) 刚好填满 sidebar(56px)
     -->
-    <div class="w-full p-2 group-data-[collapsed]/sidebar:p-0">
+    <div class="w-full p-2 ">
       <div class="w-full">
         <button
           ref="userBtnRef"
           @click="toggleUserMenu"
-          class="flex items-center w-full h-12 px-2 gap-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50 group-data-[collapsed]/sidebar:justify-center group-data-[collapsed]/sidebar:px-0"
+          class="flex items-center w-full h-12 px-2 gap-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50 "
         >
           <img src="/fcb.svg" class="size-7 shrink-0 object-contain" alt="avatar" />
           <div
-            class="flex flex-col items-start text-left overflow-hidden group-data-[collapsed]/sidebar:hidden"
+            class="flex flex-col items-start text-left overflow-hidden max-w-[200px] group-data-[collapsed]/sidebar:max-w-0 group-data-[collapsed]/sidebar:opacity-0 transition-all duration-300 ease-in-out"
           >
             <span class="text-sm font-medium leading-none whitespace-nowrap">
               {{ authStore.user?.nick_name || 'User' }}

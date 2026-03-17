@@ -738,3 +738,230 @@ html {
     @apply bg-background text-foreground;
   }
 }
+
+/* 补充到底层：确保所有内部带有背景色的嵌套容器在最底部都有圆角 */
+.milkdown-code-block .cm-scroller,
+.milkdown-code-block .cm-content {
+  border-bottom-left-radius: 0.75rem !important;
+  border-bottom-right-radius: 0.75rem !important;
+}
+
+/* 解决各种圆角和图片的边缘锯齿 (Anti-aliasing) 问题 */
+/* 1. 针对侧边栏头像图片 */
+img.object-contain, img.object-cover {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: smooth;
+}
+
+/* 2. 针对 Milkdown 代码块的圆角锯齿 */
+.milkdown-code-block {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background-clip: padding-box !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+.milkdown-code-block * {
+  transform-style: preserve-3d;
+}
+
+/* =========================================
+ * Milkdown 代码块 Claude 风格（强覆盖无色差版）
+ * ========================================= */
+
+/* 1. 统一最外层容器（唯一的边框和背景拥有者） */
+.milkdown-code-block {
+  border: 1px solid var(--border) !important;
+  border-radius: 0.75rem !important; /* 12px rounded-xl */
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+  margin: 1rem 0 !important;
+  position: relative !important;
+  overflow: visible !important; /* 让 tooltip / popover 能浮出来 */
+}
+
+/* 强制使用统一极浅背景（无色差） */
+:root:not(.dark) .milkdown-code-block,
+:root:not(.dark) .milkdown-code-block .tools,
+:root:not(.dark) .milkdown-code-block .codemirror-host,
+:root:not(.dark) .milkdown-code-block .cm-editor,
+:root:not(.dark) .milkdown-code-block .cm-scroller,
+:root:not(.dark) .milkdown-code-block .cm-content {
+  background-color: rgb(250 250 250) !important; /* 极浅灰 bg-neutral-50 */
+  background: rgb(250 250 250) !important;
+}
+
+:root.dark .milkdown-code-block,
+:root.dark .milkdown-code-block .tools,
+:root.dark .milkdown-code-block .codemirror-host,
+:root.dark .milkdown-code-block .cm-editor,
+:root.dark .milkdown-code-block .cm-scroller,
+:root.dark .milkdown-code-block .cm-content {
+  background-color: rgb(23 23 23) !important; /* 深灰 bg-neutral-900 */
+  background: rgb(23 23 23) !important;
+}
+
+/* 2. 剥夺内部所有元素的边框 */
+.milkdown-code-block .tools,
+.milkdown-code-block .codemirror-host,
+.milkdown-code-block .cm-editor,
+.milkdown-code-block .cm-scroller,
+.milkdown-code-block .cm-content {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 补充底层内部元素的圆角，因为外层 overflow visible 会导致内部直角溢出 */
+.milkdown-code-block .cm-scroller,
+.milkdown-code-block .cm-content,
+.milkdown-code-block .cm-editor,
+.milkdown-code-block .codemirror-host {
+  border-bottom-left-radius: 0.75rem !important;
+  border-bottom-right-radius: 0.75rem !important;
+}
+.milkdown-code-block .tools {
+  border-top-left-radius: 0.75rem !important;
+  border-top-right-radius: 0.75rem !important;
+}
+
+/* 3. 重塑顶部工具栏（融合进背景） */
+.milkdown-code-block .tools {
+  height: auto !important;
+  min-height: 2.5rem !important;
+  padding: 0.5rem 1rem 0 1rem !important; /* p-3.5 差不多 */
+  display: flex !important;
+  align-items: center !important;
+  border-bottom: none !important; /* 去掉可能存在的分隔线 */
+}
+
+/* 4. 将语言选择器化作纯文本 */
+.milkdown-code-block .language-button {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: auto !important;
+  color: var(--muted-foreground) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.75rem !important; /* text-xs */
+  cursor: pointer !important;
+}
+
+.milkdown-code-block .language-button:hover {
+  background: transparent !important;
+  color: var(--foreground) !important;
+}
+
+/* 必须隐藏那个碍眼的下拉三角 */
+.milkdown-code-block .language-button .expand-icon {
+  display: none !important;
+}
+
+/* 5. 复制按钮静默化（仅悬浮显示 SVG 图标） */
+.milkdown-code-block .tools-button-group {
+  position: absolute !important;
+  right: 0.5rem !important;
+  top: 0.5rem !important;
+  opacity: 0 !important;
+  transition: opacity 0.2s ease !important;
+  background: transparent !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+}
+
+.milkdown-code-block:hover .tools-button-group {
+  opacity: 1 !important;
+}
+
+/* 针对 tools-button-group 内所有的按钮 (copy / collapse) 提供统一样式 */
+.milkdown-code-block .tools-button-group button {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.25rem !important;
+  color: var(--muted-foreground) !important;
+  font-size: 0 !important; /* 隐藏可能存在的纯文本 */
+  width: 2rem !important;
+  height: 2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0.375rem !important;
+  cursor: pointer !important;
+}
+
+.milkdown-code-block .tools-button-group button:hover {
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+}
+
+.milkdown-code-block .tools-button-group button svg {
+  width: 1rem !important;
+  height: 1rem !important;
+  color: inherit !important;
+  fill: currentColor !important;
+}
+
+/* 6. 彻底干掉行号和左侧装饰线 */
+.milkdown-code-block .cm-gutters,
+.milkdown-code-block .cm-gutterElement {
+  display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* 7. 代码内容区域的呼吸感 */
+.milkdown-code-block .cm-content {
+  padding: 0.5rem 1rem 1rem 1rem !important; /* 顶紧上方的 language 标签，左右下留白 */
+  font-family: var(--font-mono) !important;
+  font-size: 0.875rem !important; /* text-sm */
+  line-height: 1.5 !important;
+}
+
+/* 取消当前编辑行的默认灰色高亮底色，让它看起来像纯展示代码 */
+.milkdown-code-block .cm-activeLine {
+  background-color: transparent !important;
+}
+
+/* 给弹出的语言列表增加键盘 Focus 的视觉反馈 */
+.milkdown-code-block .language-picker li:focus,
+.milkdown-code-block .language-picker li:focus-visible {
+  outline: none !important;
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+}
+
+/* =========================================
+ * 锯齿抗拒 (Anti-aliasing)
+ * ========================================= */
+
+/* 1. 针对侧边栏头像图片 */
+img.object-contain, img.object-cover {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: smooth;
+}
+
+/* 2. 针对 Milkdown 代码块的圆角锯齿 */
+.milkdown-code-block {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background-clip: padding-box !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+.milkdown-code-block * {
+  transform-style: preserve-3d;
+}

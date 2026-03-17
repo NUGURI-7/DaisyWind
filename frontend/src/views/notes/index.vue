@@ -239,6 +239,36 @@ const stripHtml = (html?: string) => {
 }
 
 // ── 代码块交互（不变）─────────────────────────────────────
+
+const handleEditorKeydown = (e: KeyboardEvent) => {
+  if (['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) {
+    const active = document.activeElement as HTMLElement
+    const picker = active?.closest('.language-picker')
+    if (picker) {
+      const focusable = Array.from(picker.querySelectorAll<HTMLElement>('input.search-input, li.language-list-item'))
+      if (!focusable.length) return
+      
+      const currentIndex = focusable.indexOf(active)
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        const nextIndex = (currentIndex + 1) % focusable.length
+        focusable[nextIndex]?.focus()
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        const prevIndex = (currentIndex - 1 + focusable.length) % focusable.length
+        focusable[prevIndex]?.focus()
+      } else if (e.key === 'Enter' && active.tagName.toLowerCase() === 'input') {
+        e.preventDefault()
+        const firstItem = focusable.find(el => el.tagName.toLowerCase() === 'li')
+        if (firstItem) {
+          firstItem.click()
+        }
+      }
+    }
+  }
+}
+
 const handleEditorClick = (e: Event) => {
   const target = e.target as Element
 
@@ -269,6 +299,7 @@ const destroyEditor = () => {
     pollTimer = null
   }
   editorRef.value?.removeEventListener('click', handleEditorClick)
+  editorRef.value?.removeEventListener('keydown', handleEditorKeydown)
   if (crepe) {
     crepe.destroy()
     crepe = null
@@ -284,6 +315,7 @@ const initEditor = async (content: string) => {
   await crepe.create()
   editorRef.value.querySelector<HTMLElement>('.ProseMirror')?.setAttribute('spellcheck', 'false')
   editorRef.value.addEventListener('click', handleEditorClick)
+  editorRef.value.addEventListener('keydown', handleEditorKeydown)
 
   let lastMd = content
   pollTimer = setInterval(async () => {
