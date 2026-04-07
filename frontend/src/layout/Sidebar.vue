@@ -65,7 +65,7 @@
                 @click="$router.push('/chat')"
                 class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors "
                 :class="isActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
+                  ? 'text-primary font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'"
                 :style="{ transitionDuration: 'var(--transition-fast)' }"
               >
@@ -93,7 +93,7 @@
                 @click="$router.push('/notes')"
                 class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors "
                 :class="isActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
+                  ? 'text-primary font-semibold'
                   : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'"
                 :style="{ transitionDuration: 'var(--transition-fast)' }"
               >

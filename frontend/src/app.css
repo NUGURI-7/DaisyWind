@@ -755,20 +755,6 @@ img.object-contain, img.object-cover {
   image-rendering: smooth;
 }
 
-/* 2. 针对 Milkdown 代码块的圆角锯齿 */
-.milkdown-code-block {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  background-clip: padding-box !important;
-  -webkit-font-smoothing: antialiased;
-}
-
-.milkdown-code-block * {
-  transform-style: preserve-3d;
-}
-
 /* =========================================
  * Milkdown 代码块 Claude 风格（强覆盖无色差版）
  * ========================================= */
@@ -788,8 +774,7 @@ img.object-contain, img.object-cover {
 :root:not(.dark) .milkdown-code-block .tools,
 :root:not(.dark) .milkdown-code-block .codemirror-host,
 :root:not(.dark) .milkdown-code-block .cm-editor,
-:root:not(.dark) .milkdown-code-block .cm-scroller,
-:root:not(.dark) .milkdown-code-block .cm-content {
+:root:not(.dark) .milkdown-code-block .cm-scroller {
   background-color: rgb(250 250 250) !important; /* 极浅灰 bg-neutral-50 */
   background: rgb(250 250 250) !important;
 }
@@ -798,8 +783,7 @@ img.object-contain, img.object-cover {
 :root.dark .milkdown-code-block .tools,
 :root.dark .milkdown-code-block .codemirror-host,
 :root.dark .milkdown-code-block .cm-editor,
-:root.dark .milkdown-code-block .cm-scroller,
-:root.dark .milkdown-code-block .cm-content {
+:root.dark .milkdown-code-block .cm-scroller {
   background-color: rgb(23 23 23) !important; /* 深灰 bg-neutral-900 */
   background: rgb(23 23 23) !important;
 }
@@ -825,6 +809,11 @@ img.object-contain, img.object-cover {
 .milkdown-code-block .tools {
   border-top-left-radius: 0.75rem !important;
   border-top-right-radius: 0.75rem !important;
+}
+/* 折叠时 codemirror-host 隐藏，tools 成为最底部元素，需要底部圆角 */
+.milkdown-code-block[data-collapsed='1'] .tools {
+  border-bottom-left-radius: 0.75rem !important;
+  border-bottom-right-radius: 0.75rem !important;
 }
 
 /* 3. 重塑顶部工具栏（融合进背景） */
@@ -952,16 +941,3 @@ img.object-contain, img.object-cover {
   image-rendering: smooth;
 }
 
-/* 2. 针对 Milkdown 代码块的圆角锯齿 */
-.milkdown-code-block {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  background-clip: padding-box !important;
-  -webkit-font-smoothing: antialiased;
-}
-
-.milkdown-code-block * {
-  transform-style: preserve-3d;
-}

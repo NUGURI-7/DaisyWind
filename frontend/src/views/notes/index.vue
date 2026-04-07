@@ -5,7 +5,10 @@
       class="shrink-0 overflow-hidden transition-[width] duration-300"
       :class="listVisible ? 'w-64' : 'w-0'"
     >
-      <div class="w-64 h-full flex flex-col border-r border-border bg-sidebar/30">
+      <div
+        class="w-64 h-full flex flex-col border-r border-border bg-sidebar/30 transition-opacity duration-200"
+        :class="listVisible ? 'opacity-100 delay-100' : 'opacity-0'"
+      >
         <div class="h-14 flex items-center px-4 border-b border-border/40 shrink-0">
           <div class="new-note-wrap w-full">
             <button
@@ -20,16 +23,19 @@
 
         <div class="flex-1 overflow-y-auto">
           <button
-            v-for="id in store.orderedIds"
+            v-for="(id, idx) in store.orderedIds"
             :key="id"
             @click="selectNote(id)"
-            class="group relative w-full text-left p-3 transition-all duration-200 cursor-pointer border-b border-border/50 hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted"
+            class="group relative w-full text-left p-3 transition-all duration-200 cursor-pointer border-b border-border/50 hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted animate-[slideIn_0.3s_ease_both]"
             :class="[id === store.selectedId ? 'bg-muted/80 pr-2 pl-4' : 'hover:pl-4']"
+            :style="{ animationDelay: `${idx * 35}ms` }"
           >
-            <!-- 选中状态左侧指示线 -->
+            <!-- 左侧指示线：选中常驻，hover 滑入 -->
             <div
-              class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 rounded-r-full bg-primary transition-all duration-300"
-              :class="id === store.selectedId ? 'h-3/5 opacity-100' : 'h-0 opacity-0'"
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 rounded-r-full transition-all duration-300"
+              :class="id === store.selectedId
+                ? 'h-3/5 opacity-100 bg-primary'
+                : 'h-0 opacity-0 bg-primary/50 group-hover:h-2/5 group-hover:opacity-100'"
             ></div>
 
             <div class="flex items-center justify-between gap-2 mb-1">
@@ -103,7 +109,7 @@
                 v-if="store.saving === 'saved'"
                 class="flex items-center gap-1.5 text-success animate-[fadeOut_2s_ease-out_forwards]"
               >
-                <PhCheckCircle :size="14" />
+                <PhCheckCircle :size="14" class="animate-[popIn_0.35s_ease]" />
                 Saved
               </span>
             </transition>
@@ -121,7 +127,7 @@
 
           <button
             @click="confirmDelete"
-            class="flex items-center justify-center size-7 rounded-md text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/50 shrink-0 cursor-pointer"
+            class="flex items-center justify-center size-7 rounded-md text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/50 shrink-0 cursor-pointer active:scale-90"
             aria-label="Delete note"
           >
             <PhTrash :size="20" />
@@ -141,13 +147,13 @@
         </div>
 
         <!-- 编辑区域 -->
-        <div class="flex-1 overflow-y-auto py-8 pl-8 pr-8 min-w-0 flex flex-col">
+        <div class="flex-1 overflow-y-auto py-8 pl-8 pr-8 min-w-0 flex flex-col [scrollbar-gutter:stable]">
           <div v-if="store.selectedId" class="flex-1">
-            <div ref="editorRef" class="h-full" />
+            <div ref="editorRef" class="h-full animate-[editorIn_0.35s_ease_both]" />
           </div>
-          <div v-else class="flex flex-col items-center justify-center h-full text-center px-4">
+          <div v-else class="flex flex-col items-center justify-center h-full text-center px-4 animate-[editorIn_0.4s_ease_both]">
             <div
-              class="flex items-center justify-center size-16 rounded-full bg-muted/50 text-foreground/20 mb-4"
+              class="flex items-center justify-center size-16 rounded-full bg-muted/50 text-foreground/20 mb-4 animate-[float_3s_ease-in-out_infinite]"
             >
               <PhNoteBlank :size="32" weight="light" />
             </div>
@@ -247,7 +253,8 @@ const formatDate = (iso?: string) => {
 /** 去除 HTML 标签，用于安全展示 preview 文本 */
 const stripHtml = (html?: string) => {
   if (!html) return ''
-  return html.replace(/<[^>]*>/g, '').trim()
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  return doc.body.textContent?.trim() || ''
 }
 
 // ── 代码块交互（不变）─────────────────────────────────────
@@ -501,13 +508,9 @@ onBeforeUnmount(() => {
   padding: 48px clamp(20px, 6%, 64px) !important;
 }
 
-/* ── 代码块：正文白底，gutter 同步白底 ── */
-.milkdown .cm-editor,
-.milkdown .cm-scroller {
-  background-color: #fff !important;
-}
+/* ── 代码块：gutter 背景与编辑器统一 ── */
 .milkdown .cm-gutters {
-  background-color: #fff !important;
+  background-color: inherit !important;
   border-right: none !important;
 }
 
@@ -631,9 +634,17 @@ onBeforeUnmount(() => {
     no-repeat center / contain;
 }
 
-/* ── 折叠状态：隐藏代码内容 ── */
+/* ── 代码块折叠/展开平滑过渡 ── */
+.milkdown .milkdown-code-block .codemirror-host {
+  max-height: 2000px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+}
 .milkdown .milkdown-code-block[data-collapsed='1'] .codemirror-host {
-  display: none !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  transition: max-height 0.25s ease, opacity 0.15s ease;
 }
 
 /* ── Blockquote 左侧竖条颜色 ── */
@@ -695,19 +706,6 @@ onBeforeUnmount(() => {
   to {
     --nna: 360deg;
   }
-}
-
-/* ── Block handle：缩小图标 ── */
-.milkdown .milkdown-block-handle .operation-item {
-  width: 20px !important;
-  height: 20px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-.milkdown .milkdown-block-handle .operation-item .milkdown-icon svg {
-  width: 14px !important;
-  height: 14px !important;
 }
 
 /* ── Block hover：背景变色 ── */
@@ -827,7 +825,7 @@ onBeforeUnmount(() => {
   }
   /* selection / cursor */
   & .cm-selectionBackground {
-    background-color: #bcc0cc60 !important;
+    background-color: #bcc0ccb0 !important;
   }
   & .cm-cursor {
     border-left-color: #dc8a78 !important;
@@ -845,6 +843,43 @@ onBeforeUnmount(() => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-2px);
+}
+
+/* ── 空状态图标呼吸浮动 ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* ── Saved checkmark 弹跳 ── */
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* ── 编辑器切换淡入上浮 ── */
+@keyframes editorIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── 列表项错开入场 ── */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* 延迟淡出动画（给 Saved 用的） */
