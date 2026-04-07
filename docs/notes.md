@@ -1,6 +1,7 @@
 # Notes Module Plan
 
 > **Status: P1 Completed & UI Polished (2026-03-10)**
+> **优先级调整（2026-03-25）**：Notes 基础功能已完成。随产品定位收窄至 AI 核心能力验证，后续增强（Phase Two 及更多）暂缓，待 Chat/RAG 核心能力跑通后再重新评估。
 
 ## Positioning
 
@@ -105,9 +106,9 @@ Frontend:
 5. Add Pinia store `notes.ts`
 6. Refactor `views/notes/index.vue` to use store, lazy loading, debounced autosave, and delete flow
 
-### 7. Phase Two
+### 7. Phase Two（⏸️ 暂缓）
 
-> **Status: Not yet implemented.** Currently images are embedded as base64 data URIs directly in note content.
+> **Status: Not yet implemented, 暂缓。** 随产品定位调整，Notes 后续增强不属于当前阶段重点。Currently images are embedded as base64 data URIs directly in note content.
 
 - Add image upload endpoint
 - Store note images on local disk

@@ -2,13 +2,15 @@
 
 ## 项目概述
 - DaisyWind 是一个个人独立开发的 full-stack 项目，前端使用 Vue 3，后端使用 FastAPI。
-- 当前产品形态是一个带认证能力的应用壳，核心入口包括 Chat 和 Notes。
+- 当前定位：聚焦 AI 核心能力的技术验证平台，优先实现 Pydantic AI Agent 对话系统、RAG 知识库检索、以及对话相关的前后端基础设施。
+- 已有基础设施：认证系统、可折叠 Sidebar 布局、Notes 模块（基础版已完成，后续增强暂缓）。
 - 这个文件是后续 AI 新对话的单一项目上下文来源。
 
 ## 早期方向参考（低权重）
 - 这部分只用于提供产品方向上的大致印象，帮助 AI 理解项目可能的长期演化方向。
 - 这不是正式需求，不构成强约束，也不代表相关能力已经实现。
 - 如果与当前代码现状、你在当次对话中的明确要求或后续决策冲突，应以实际项目状态和当前任务为准。
+- **当前阶段收窄**：从"通用 AI 助手平台"收缩为"AI 核心能力技术验证平台"。Notes 系统、复杂前端交互等非 AI 核心功能已暂缓，前端仅做满足测试和验证需要的最小实现。
 - 目前可以暂时将 DaisyWind 理解为一个面向个人使用场景的智能 AI Agent 助手项目。
 - 它的整体方向不是停留在传统的一问一答式对话工具上，而是希望逐步演化为一个更具主动性、可调用工具、可协助处理任务，并能够沉淀用户有效信息的个人智能助手。
 - 当前这段描述主要用于提供产品方向上的粗略印象，不应视为固定产品定义；后续产品形态、能力边界和知识沉淀方式仍可能随着开发持续调整。
@@ -29,7 +31,7 @@
 - 主应用布局采用可折叠 sidebar（Flexbox + data-[collapsed] 驱动）。
 - sidebar 包含 Chat、Notes 和 Settings（Theme Switcher Popover）入口。
 - sidebar 底部用户菜单已通过 `Teleport` 脱离 overflow 裁剪上下文。
-- Notes 模块（P1 已完成）：`api/note.ts` + `stores/notes.ts`（Pinia，autosave debounce + race condition 保护）+ `views/notes/index.vue`（接入 API，可折叠列表面板，AI 面板 toolbar 切换，删除确认）。Milkdown Crepe editor 含代码块折叠/复制反馈、block hover 背景高亮。
+- Notes 模块（P1 已完成，后续增强暂缓——当前阶段聚焦 AI 核心能力）：`api/note.ts` + `stores/notes.ts`（Pinia，autosave debounce + race condition 保护）+ `views/notes/index.vue`（接入 API，可折叠列表面板，AI 面板 toolbar 切换，删除确认）。Milkdown Crepe editor 含代码块折叠/复制反馈、block hover 背景高亮。
 - 全局 `btn-ghost` hover 色通过 `--color-btn-ghost-hover` CSS 变量覆盖；sidebar 折叠状态持久化至 `localStorage`。
 - Backend Notes CRUD 接口已完成（列表、新建、详情、更新、软删除），路由注册在 `/api/nuguri/note/notes`；title 和 preview 由后端从 content 自动提取。
 - Backend 已有用户注册、登录、获取 current user 的接口。
@@ -47,11 +49,13 @@
 - **关键约束**：Tailwind v4（CSS-based config，无 tailwind.config.js）、图标用 @phosphor-icons/vue、不引入 Radix Vue（用 Reka UI v2）
 
 ## 其他进行中
-- Chat 模块目前有页面结构，但产品行为还不适合视为稳定完成。
+- Chat 模块目前有页面结构和完整架构设计（见 `docs/chat-architecture.md`），是当前阶段的核心开发重点。
 - Settings 入口已接入 ThemeSwitcher（Popover 弹出，含 12 主题色 + Light/Dark 切换）。
 
 ## 下一步
-- 探索/优化其他交互细节，或继续推进 Chat 模块等其他核心功能。
+- **当前重点**：实现 Chat 模块 P0（Provider 管理 + 基础 PydanticAI Agent + SSE 流式输出 + 对话 CRUD），端到端跑通 AI 对话流。
+- **后续方向**：P1（多 Agent + Tool 调用）→ P2（RAG 知识库检索）。详见 `docs/roadmap.md`。
+- **流式渲染规范**：SSE 事件协议、前端块级状态机、组件映射。详见 `docs/streaming-render.md`。
 
 ## 开发注意事项
 - 项目 UI 统一使用 `@phosphor-icons/vue`，不要引入手写 SVG 或第二套 icon library。
