@@ -19,7 +19,7 @@
 - Frontend: Vue 3, Vite, TypeScript, Pinia, Vue Router, Tailwind CSS v4, shadcn-vue (Reka UI v2), `@phosphor-icons/vue`
 - Frontend editor: Milkdown Crepe
 - Backend: FastAPI, Tortoise ORM, Redis, PostgreSQL, JWT auth
-- Python tooling: `uv`, Aerich
+- Python tooling: `uv`, Tortoise ORM 内置迁移（`tortoise` CLI）
 - Frontend dev server: 在 `frontend/` 目录运行 `npm run dev`，端口 `7777`
 - Backend dev server: 运行 `uv run python main.py`，端口 `8000`
 - API prefix: `/api/nuguri`
