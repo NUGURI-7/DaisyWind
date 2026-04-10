@@ -5,7 +5,7 @@
     @date: 2026/3/6 10:06
     @desc:
 """
-from tortoise import Tortoise, connections
+from tortoise import Tortoise
 
 from config import settings
 
@@ -32,11 +32,13 @@ TORTOISE_CONFIG = {
                 "backend.app.models.chat_model"
             ],
             'default_connection': 'default',
+            'migrations': 'backend.migrations',
         },
     },
     'use_tz': False,
     'timezone': 'Asia/Shanghai',
 }
+
 
 class PostgreSQLClient:
 
@@ -59,12 +61,13 @@ class PostgreSQLClient:
     async def close(self):
 
         if self._initialized:
-            await connections.close_all()
+            await Tortoise.close_connections()
             self._initialized = False
             print("👋 PostgreSQL 连接已关闭")
 
     @property
     def is_connected(self):
         return self._initialized
+
 
 pg_client = PostgreSQLClient()

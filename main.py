@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from tortoise.contrib.fastapi import RegisterTortoise
 
 from backend.app.api import api_router
 from backend.app.core.exception_handlers import app_exception_handler, http_exception_handler, \
@@ -11,7 +12,7 @@ from backend.app.core.exception_handlers import app_exception_handler, http_exce
 from backend.app.core.exceptions import AppApiException
 from backend.app.core.middlewares import register_middlewares
 from backend.app.core.redis import RedisClient
-from backend.app.db.postgresql import PostgreSQLClient
+from backend.app.db.postgresql import PostgreSQLClient, TORTOISE_CONFIG
 from config import settings
 from contextlib import asynccontextmanager
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -24,21 +25,18 @@ async def lifespan(app: FastAPI):
     app.state.redis = redis # type: ignore
 
     # db_init() 链接数据库
-    pgsql = PostgreSQLClient()
-    await pgsql.connect()
+    async with RegisterTortoise(app, config=TORTOISE_CONFIG):
+        print("🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖")
+        print(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION}")
+        print("✨ 初始化完成 ✨ ")
+        yield
     # mysql = MySQLClient()
     # await mysql.connect()
     # db_settings() 获取动态配置
     # service_init() 启动第三方服务
     # send_email() 发送email给程序维护者
-    print("🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖")
-    print(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION}")
-    print("✨ 初始化完成 ✨ ")
-    yield
-
     # logger() 记录关闭日志
     await app.state.redis.close() # type: ignore
-    await pgsql.close()
     # db_close()
     # service_close()
     # send_email() 发送email给程序维护者
