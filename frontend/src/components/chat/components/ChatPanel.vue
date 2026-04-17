@@ -22,6 +22,7 @@ watch(
   () => route.params.uuid,
   (uuid) => {
     if (typeof uuid === 'string' && uuid) {
+      if (uuid === chat.currentConversationUuid) return
       chat.loadConversation(uuid)
     } else {
       chat.newConversation()

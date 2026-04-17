@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -39,7 +39,7 @@
   --ring: oklch(0.709 0.01 56.259);
 
   /* 状态色扩展 */
-  --info: oklch(0.70 0.10 230);
+  --info: oklch(0.7 0.1 230);
   --info-foreground: oklch(0.98 0.005 75);
   --success: oklch(0.65 0.15 145);
   --success-foreground: oklch(0.98 0.005 75);
@@ -58,7 +58,7 @@
   --sidebar-foreground: oklch(0.147 0.004 49.25);
   --sidebar-primary: oklch(0.216 0.006 56.043);
   --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.97 0.001 106.424);
+  --sidebar-accent: oklch(0.91 0.004 106.424);
   --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
   --sidebar-border: oklch(0.923 0.003 48.717);
   --sidebar-ring: oklch(0.709 0.01 56.259);
@@ -71,9 +71,9 @@
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
   /* --- 阴影 --- */
-  --shadow-sm: 0 1px 2px oklch(0.20 0.01 60 / 0.04);
-  --shadow-md: 0 2px 8px oklch(0.20 0.01 60 / 0.06);
-  --shadow-lg: 0 4px 16px oklch(0.20 0.01 60 / 0.08);
+  --shadow-sm: 0 1px 2px oklch(0.2 0.01 60 / 0.04);
+  --shadow-md: 0 2px 8px oklch(0.2 0.01 60 / 0.06);
+  --shadow-lg: 0 4px 16px oklch(0.2 0.01 60 / 0.08);
 
   /* --- 过渡 --- */
   --transition-fast: 150ms ease;
@@ -114,11 +114,11 @@
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.553 0.013 58.071);
 
-  --info: oklch(0.75 0.10 230);
+  --info: oklch(0.75 0.1 230);
   --info-foreground: oklch(0.15 0.01 60);
-  --success: oklch(0.70 0.15 145);
+  --success: oklch(0.7 0.15 145);
   --success-foreground: oklch(0.15 0.01 60);
-  --warning: oklch(0.80 0.12 80);
+  --warning: oklch(0.8 0.12 80);
   --warning-foreground: oklch(0.15 0.01 60);
 
   --chart-1: oklch(0.488 0.243 264.376);
@@ -136,9 +136,9 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.553 0.013 58.071);
 
-  --shadow-sm: 0 1px 2px oklch(0.00 0 0 / 0.15);
-  --shadow-md: 0 2px 8px oklch(0.00 0 0 / 0.25);
-  --shadow-lg: 0 4px 16px oklch(0.00 0 0 / 0.35);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.15);
+  --shadow-md: 0 2px 8px oklch(0 0 0 / 0.25);
+  --shadow-lg: 0 4px 16px oklch(0 0 0 / 0.35);
 }
 
 /* =============================================
@@ -392,12 +392,12 @@
   --sidebar-ring: oklch(0.585 0.22 17.5);
 }
 .dark.theme-rose {
-  --primary: oklch(0.70 0.19 17.5);
+  --primary: oklch(0.7 0.19 17.5);
   --primary-foreground: oklch(0.15 0.04 17.5);
-  --ring: oklch(0.70 0.19 17.5);
-  --sidebar-primary: oklch(0.70 0.19 17.5);
+  --ring: oklch(0.7 0.19 17.5);
+  --sidebar-primary: oklch(0.7 0.19 17.5);
   --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-ring: oklch(0.70 0.19 17.5);
+  --sidebar-ring: oklch(0.7 0.19 17.5);
 }
 
 .theme-red {
@@ -460,12 +460,12 @@
   --sidebar-ring: oklch(0.623 0.214 259.815);
 }
 .dark.theme-blue {
-  --primary: oklch(0.70 0.19 259.815);
+  --primary: oklch(0.7 0.19 259.815);
   --primary-foreground: oklch(0.15 0.04 260);
-  --ring: oklch(0.70 0.19 259.815);
-  --sidebar-primary: oklch(0.70 0.19 259.815);
+  --ring: oklch(0.7 0.19 259.815);
+  --sidebar-primary: oklch(0.7 0.19 259.815);
   --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-ring: oklch(0.70 0.19 259.815);
+  --sidebar-ring: oklch(0.7 0.19 259.815);
 }
 
 .theme-yellow {
@@ -494,12 +494,12 @@
   --sidebar-ring: oklch(0.606 0.25 292.717);
 }
 .dark.theme-violet {
-  --primary: oklch(0.70 0.22 292.717);
+  --primary: oklch(0.7 0.22 292.717);
   --primary-foreground: oklch(0.15 0.04 293);
-  --ring: oklch(0.70 0.22 292.717);
-  --sidebar-primary: oklch(0.70 0.22 292.717);
+  --ring: oklch(0.7 0.22 292.717);
+  --sidebar-primary: oklch(0.7 0.22 292.717);
   --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-ring: oklch(0.70 0.22 292.717);
+  --sidebar-ring: oklch(0.7 0.22 292.717);
 }
 
 /* =============================================
@@ -748,7 +748,8 @@ html {
 
 /* 解决各种圆角和图片的边缘锯齿 (Anti-aliasing) 问题 */
 /* 1. 针对侧边栏头像图片 */
-img.object-contain, img.object-cover {
+img.object-contain,
+img.object-cover {
   transform: translateZ(0);
   backface-visibility: hidden;
   image-rendering: -webkit-optimize-contrast;
@@ -934,10 +935,10 @@ img.object-contain, img.object-cover {
  * ========================================= */
 
 /* 1. 针对侧边栏头像图片 */
-img.object-contain, img.object-cover {
+img.object-contain,
+img.object-cover {
   transform: translateZ(0);
   backface-visibility: hidden;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: smooth;
 }
-

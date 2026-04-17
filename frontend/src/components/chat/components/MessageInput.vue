@@ -29,9 +29,13 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
 import { PhPaperPlaneTilt } from '@phosphor-icons/vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useChatStore } from '@/stores/chat'
 
 const chat = useChatStore()
+const route = useRoute()
+const router = useRouter()
+
 const input = ref('')
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
@@ -49,6 +53,10 @@ async function handleSend() {
   input.value = ''
   await nextTick()
   autoResize()
+
+  if (!route.params.uuid && chat.currentConversationUuid) {
+    router.push(`/chat/${chat.currentConversationUuid}`)
+  }
 
   await chat.sendMessage({
     message_uuid: crypto.randomUUID(),
