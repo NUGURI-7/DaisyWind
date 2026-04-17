@@ -48,13 +48,20 @@
   - `views/login`、`views/register`、`views/notes`、`components/chat`、`layout/Sidebar` 均已成功用 shadcn-vue 与原生 Tailwind v4 重写。
 - **关键约束**：Tailwind v4（CSS-based config，无 tailwind.config.js）、图标用 @phosphor-icons/vue、不引入 Radix Vue（用 Reka UI v2）
 
+## 已完成：Chat 模块 P0（2026-04-17，M1 里程碑达成）
+- **Provider 工厂**：`backend/app/agents/providers.py` 基于 PydanticAI 新 API（Model + Provider 分离），当前支持 DeepSeek 和 Gemini，配置驱动。
+- **Chat Agent**：`backend/app/agents/chat_agent.py` + `deps.py`，最小 system prompt + `AgentDeps` 运行时容器（user、conversation）。
+- **SSE 结构化事件协议**：`/api/nuguri/v1/chat/send`，事件类型含 `message_start` / `content_block_start|delta|stop` / `message_delta` / `message_stop` / `error`，P1 加 Tool 时可直接增量扩展。
+- **对话持久化 + CRUD**：`Conversation`（含 `provider` / `model` / `summary` / `cost`）+ `ChatMessage`，`get_or_create_conversation` 惰性创建，list/detail/delete 接口。
+- **前端 Chat UI**：Pinia store 驱动的事件级块状态机、fetch-based SSE 消费（非 EventSource）、Sidebar 内嵌 `Recents` 对话列表、URL 同步 `/chat/:uuid?`、切换/新建/删除完整闭环。
+- **关键细节**：`Conversation.model_str` 重命名为 `Conversation.model`（Pydantic v2 对 `model` 字段名无警告）；高度链用 `min-h-0` + `shrink-0` 解决 flex 输入框贴底问题；`get_conversation_or_404` 补齐 `return`。
+
 ## 其他进行中
-- Chat 模块目前有页面结构和完整架构设计（见 `docs/chat-architecture.md`），是当前阶段的核心开发重点。
 - Settings 入口已接入 ThemeSwitcher（Popover 弹出，含 12 主题色 + Light/Dark 切换）。
 
 ## 下一步
-- **当前重点**：实现 Chat 模块 P0（Provider 管理 + 基础 PydanticAI Agent + SSE 流式输出 + 对话 CRUD），端到端跑通 AI 对话流。
-- **后续方向**：P1（多 Agent + Tool 调用）→ P2（RAG 知识库检索）。详见 `docs/roadmap.md`。
+- **当前重点**：进入 Chat P1 — Tool 调用与多 Agent（`@agent.tool` 工具系统、Orchestrator 模式、Web 搜索 Tool、Notes 搜索 Tool、前端 Tool 调用卡片渲染）。
+- **后续方向**：P2（RAG 知识库检索，pgvector + Embedding）。详见 `docs/roadmap.md`。
 - **流式渲染规范**：SSE 事件协议、前端块级状态机、组件映射。详见 `docs/streaming-render.md`。
 
 ## 开发注意事项
@@ -69,6 +76,13 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-04-17（Chat 模块 P0 完成，M1 里程碑达成）
+- 后端完成 Provider 工厂 + PydanticAI Agent + SSE 结构化流式接口 + 对话 CRUD 持久化。详见本文档上方「已完成：Chat 模块 P0」小节。
+- 前端完成 Pinia 事件驱动状态机 + fetch SSE 消费器 + Sidebar 内嵌 `Recents` 列表 + URL 路由同步。
+- 字段重命名：`Conversation.model_str` → `Conversation.model`，用 Tortoise `RenameField` 迁移，无数据丢失。
+- 修复多处：输入框未贴底的 flex 高度链问题（`min-h-0` + `shrink-0`）、`get_conversation_or_404` 漏 `return`、`ConversationOut` 缺 `ConfigDict(from_attributes=True)`。
+- P0 范围决议（不做空状态 Landing Page / 不做流式取消 / 不做 Starred 分组 / 不做"⋯"菜单 / 不做模型选择器）全部兑现，这些条目已归入 `roadmap.md` 的 Phase 2 体验增强。
+
 ### 2026-03-17（UI 细节优化、API 调整与前端图片直传接入）
 - 前端图片上传接入：修复了 `api/media.ts` 中 `getPresignedUrl` 的参数拼写错误，并在 Notes 的 Milkdown (Crepe) 编辑器中全面接入图片直传 OSS (R2) 逻辑（覆盖 ImageBlock、拖拽及粘贴上传），上传成功后自动替换为公共访问链接。
 - Sidebar 动画重构：改用 Tailwind 原生的 `max-w-[200px]`、`opacity-0` 和 `transition-all` 组合，实现更平滑的文本和图标展开/折叠动画。

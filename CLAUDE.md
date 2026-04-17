@@ -58,7 +58,7 @@
 
 ## 图标规范
 
-**项目自身的 UI 统一使用 `@phosphor-icons/vue`，禁止使用任何手写 SVG 或其他图标库。**
+**静态图标统一使用 `@phosphor-icons/vue`；动态 loader / spinner 类动画使用 `ldrs`。禁止手写 SVG 或引入其他图标库。**
 
 > **例外**：第三方组件库（如 Milkdown / Crepe）内部自带的图标，保持原样，不做替换。只通过 CSS 统一颜色即可。
 

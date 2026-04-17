@@ -5,6 +5,8 @@
     @date: 2026/2/12 17:22
     @desc:
 """
+from pydantic_ai import ModelMessage, ModelRequest, UserPromptPart, ModelResponse, TextPart
+
 from backend.app.core.exceptions import NotFound404
 from backend.app.models import User, Conversation, ChatMessage
 from backend.app.schemas.chat_schema import MessageRole
@@ -13,9 +15,9 @@ from backend.app.schemas.chat_schema import MessageRole
 class ChatService:
 
     @staticmethod
-    async def create_conversation(user: User, model_str: str = "deepseek-chat") -> Conversation:
+    async def create_conversation(user: User, model: str = "deepseek-chat") -> Conversation:
         """创建新对话"""
-        conversation = await Conversation.create(user=user, model_str=model_str)
+        conversation = await Conversation.create(user=user, model=model)
         return conversation
 
     @staticmethod
@@ -54,10 +56,18 @@ class ChatService:
         return await ChatMessage.filter(conversation=conversation).order_by("created_at").all()
 
     @staticmethod
-    async def build_llm_messages(conversation: Conversation) -> list[dict]:
-        """构建发给 LLM 的 messages 列表"""
+    async def build_llm_messages(conversation: Conversation) -> list[ModelMessage]:
+        """构建 PydanticAI 格式的 message_history。"""
         messages = await ChatService.get_chat_messages(conversation)
-        return [{"role": msg.role, "content": msg.content} for msg in messages]
+        result: list[ModelMessage] = []
+
+        for msg in messages:
+            if msg.role == "user":
+                result.append(ModelRequest(parts=[UserPromptPart(content=msg.content)]))
+            elif msg.role == "assistant":
+                result.append(ModelResponse(parts=[TextPart(content=msg.content)]))
+
+        return result
 
     @staticmethod
     async def update_title_from_first_message(conversation: Conversation) -> None:
@@ -68,3 +78,19 @@ class ChatService:
         if first_msg:
             conversation.title = first_msg.content[:30]
             await conversation.save()
+
+    @staticmethod
+    async def get_or_create_conversation(
+            uuid: str, user: User, provider: str = "deepseek", model: str = "deepseek-chat"
+    ) -> tuple[Conversation, bool]:
+        """获取或创建对话。返回 (conversation, created)。"""
+        conversation = await Conversation.filter(uuid=uuid,user=user).first()
+        if conversation:
+            return conversation, False
+        conversation = await Conversation.create(
+            uuid=uuid, user=user, provider=provider, model=model
+        )
+        return conversation, True
+
+
+

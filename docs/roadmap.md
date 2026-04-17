@@ -1,7 +1,7 @@
 # Windify — Development Roadmap
 
 > 基于 AI 核心能力技术验证的阶段性路线图。
-> 最后更新：2026-03-25
+> 最后更新：2026-04-17
 
 ---
 
@@ -9,7 +9,7 @@
 
 目标：从零跑通一个完整的现代 AI Agent 系统。
 
-### P0 — 端到端对话（最高优先级）
+### P0 — 端到端对话（最高优先级）✅ 已完成 2026-04-17
 
 完成后得到：一个能选模型、能流式对话、能保存历史的基础聊天应用。
 
@@ -20,6 +20,8 @@
 | 3 | SSE 流式接口 | FastAPI `StreamingResponse` + `agent.run_stream()`，**从 P0 起就使用结构化 SSE 事件协议**（message_start / content_block_delta / message_stop），P1 加 Tool 时只需增量添加新事件类型，无需重构 | #2 |
 | 4 | 对话持久化 | Conversation + ChatMessage 模型扩展 + CRUD 接口 | #2 |
 | 5 | 前端最小 Chat UI | 消息列表 + 输入框 + SSE 消费 + 事件级块渲染（详见 `docs/streaming-render.md`） | #3, #4 |
+
+> P0 范围决议（做/不做清单）已兑现，详见 `docs/context.md` 的 2026-04-17 迭代记录；延后项均已挂入 Phase 2。
 
 ### P1 — Tool 调用与多 Agent
 
@@ -52,6 +54,8 @@
 
 | 功能 | 说明 | 对应架构文档 |
 |------|------|-------------|
+| Chat 空状态 Landing Page | 新对话时显示居中问候语 + 建议 prompt 卡片（Claude 风格），输入框居中而非贴底 | — |
+| Chat 侧栏精致化 | ConversationList 加 Starred/Pinned 分组、hover "⋯" 三点菜单替换直接删除按钮、Recents "View all" 或分页 | — |
 | 多模态消息 | 图片输入，ChatMessage.content 改为 JSON 多段结构 | chat-architecture.md §4.5 |
 | Context 自动摘要 | 长对话 token 超限时，用 LLM 压缩早期消息 | chat-architecture.md §4.4 |
 | 用户取消生成 | Redis flag + SSE 循环检查，前端"停止"按钮 | chat-architecture.md §4.7 |
@@ -77,7 +81,7 @@
 
 | 检查点 | 标志 | 意义 |
 |--------|------|------|
-| **M1** | P0 完成 | 端到端 AI 对话跑通，能选模型、能流式输出、能保存历史 |
+| **M1** ✅ | P0 完成（2026-04-17） | 端到端 AI 对话跑通，能选模型、能流式输出、能保存历史 |
 | **M2** | P1 完成 | Agent 能调用工具，具备联网搜索和笔记检索能力 |
 | **M3** | P2 完成 | RAG 语义检索就绪，Agent 能理解并检索私有知识库 |
 | **M4** | Phase 1 收尾 | 核心 AI 能力验证完成，评估是否进入 Phase 2 |

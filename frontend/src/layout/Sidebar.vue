@@ -51,22 +51,20 @@
       </button>
     </div>
 
-    <nav class="flex flex-col w-full grow px-2 gap-1 mt-4">
+    <nav class="flex flex-col w-full shrink-0 px-2 gap-1 mt-4">
       <TooltipProvider :delay-duration="100">
         <!-- New Chat -->
         <Tooltip>
           <TooltipTrigger as-child>
-            <RouterLink
-              v-slot="{ isActive }"
-              to="/chat"
-              custom
-            >
+            <RouterLink v-slot="{ isActive }" to="/chat" custom>
               <button
                 @click="$router.push('/chat')"
-                class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors "
-                :class="isActive
-                  ? 'text-primary font-semibold'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'"
+                class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors"
+                :class="
+                  isActive
+                    ? 'text-primary font-semibold'
+                    : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                "
                 :style="{ transitionDuration: 'var(--transition-fast)' }"
               >
                 <PhPlus :size="18" class="shrink-0" />
@@ -84,17 +82,15 @@
         <!-- Notes -->
         <Tooltip>
           <TooltipTrigger as-child>
-            <RouterLink
-              v-slot="{ isActive }"
-              to="/notes"
-              custom
-            >
+            <RouterLink v-slot="{ isActive }" to="/notes" custom>
               <button
                 @click="$router.push('/notes')"
-                class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors "
-                :class="isActive
-                  ? 'text-primary font-semibold'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'"
+                class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium transition-colors"
+                :class="
+                  isActive
+                    ? 'text-primary font-semibold'
+                    : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                "
                 :style="{ transitionDuration: 'var(--transition-fast)' }"
               >
                 <PhNotePencil :size="18" class="shrink-0" />
@@ -113,7 +109,7 @@
         <Popover>
           <PopoverTrigger as-child>
             <button
-              class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground  cursor-pointer"
+              class="flex items-center w-full h-10 px-2 gap-3 rounded-md text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer"
               :style="{ transitionDuration: 'var(--transition-fast)' }"
             >
               <PhSliders :size="18" class="shrink-0" />
@@ -130,6 +126,10 @@
         </Popover>
       </TooltipProvider>
     </nav>
+    <!-- Recents 对话列表：折叠时隐藏 -->
+    <div class="flex-1 min-h-0 flex flex-col">
+      <ConversationList class="group-data-[collapsed]/sidebar:hidden" />
+    </div>
 
     <!-- 底部用户信息 -->
     <!--
@@ -137,12 +137,12 @@
       之前 p-2 在折叠时让按钮偏移 8px，配合 overflow-x-clip 导致右侧 8px 被裁掉
       现在折叠时 padding=0，btn-square(56px) 刚好填满 sidebar(56px)
     -->
-    <div class="w-full p-2 ">
+    <div class="w-full p-2">
       <div class="w-full">
         <button
           ref="userBtnRef"
           @click="toggleUserMenu"
-          class="flex items-center w-full h-12 px-2 gap-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50 "
+          class="flex items-center w-full h-12 px-2 gap-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring/50"
         >
           <img src="/fcb.svg" class="size-7 shrink-0 object-contain" alt="avatar" />
           <div
@@ -234,7 +234,7 @@ import { ref } from 'vue'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
-
+import ConversationList from '@/components/chat/components/ConversationList.vue'
 defineProps<{
   isOpen: boolean
 }>()

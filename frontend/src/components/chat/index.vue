@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="h-full">
     <ChatPanel></ChatPanel>
   </div>
 </template>

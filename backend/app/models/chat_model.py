@@ -14,7 +14,9 @@ from backend.app.db.base import BaseModel, UUIDModel, TimestampMixin
 class Conversation(BaseModel, UUIDModel, TimestampMixin):
     """对话/会话"""
     title = fields.CharField(max_length=200, default="New chat")
-    model_str = fields.CharField(max_length=50, default="deepseek-chat")
+    model = fields.CharField(max_length=50, default="deepseek-chat")
+    provider = fields.CharField(max_length=20, default="deepseek")
+    summary = fields.TextField(null=True)
 
     user = fields.ForeignKeyField(
         "models.User", related_name="conversation", on_delete=fields.CASCADE
@@ -33,6 +35,7 @@ class ChatMessage(BaseModel, UUIDModel, TimestampMixin):
     role = fields.CharField(max_length=20)
     content = fields.TextField()
     token_count = fields.IntField(null=True)
+    cost = fields.DecimalField(max_digits=10, decimal_places=6, null=True)
 
     conversation = fields.ForeignKeyField(
         "models.Conversation", related_name="message", on_delete=fields.CASCADE

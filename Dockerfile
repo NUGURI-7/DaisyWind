@@ -18,9 +18,8 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 # Copy application code
-COPY main.py config.py aerich.ini ./
+COPY main.py config.py ./
 COPY backend/ ./backend/
-COPY migrations/ ./migrations/
 
 # Copy built frontend
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist

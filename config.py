@@ -19,11 +19,14 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 30  # 24小时
 
-    # LLM
-    # LLM
-    LLM_API_KEY: str = ""
-    LLM_BASE_URL: str = "https://api.deepseek.com/v1"
-    LLM_MODEL: str = "deepseek-chat"
+    # ==================== LLM Providers ====================
+    DEEPSEEK_API_KEY: str = ""
+    OPENAI_API_KEY: str = ""
+    DASHSCOPE_API_KEY: str = ""       # 阿里 Qwen
+    GEMINI_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str = ""
+    DEFAULT_PROVIDER: str = "deepseek"
+    DEFAULT_MODEL: str = "deepseek-chat"
 
     # 文件配置
     STATIC_DIR: str = "static"
