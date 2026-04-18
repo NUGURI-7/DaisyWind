@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-ai>=1.70.0",
     "pyjwt>=2.11.0",
     "redis>=6.2.0",
+    "tavily-python>=0.7.23",
     "tortoise-orm[asyncpg]>=1.1.7",
     "uuid-utils>=0.14.0",
 ]

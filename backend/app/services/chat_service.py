@@ -5,11 +5,19 @@
     @date: 2026/2/12 17:22
     @desc:
 """
-from pydantic_ai import ModelMessage, ModelRequest, UserPromptPart, ModelResponse, TextPart
+from pydantic_ai import (
+    ModelMessage,
+    ModelRequest,
+    ModelResponse,
+    UserPromptPart,
+    TextPart,
+    ToolCallPart,
+    ToolReturnPart,
+)
 
 from backend.app.core.exceptions import NotFound404
 from backend.app.models import User, Conversation, ChatMessage
-from backend.app.schemas.chat_schema import MessageRole
+from backend.app.schemas.chat_schema import MessageRole, ContentBlock
 
 
 class ChatService:
@@ -40,12 +48,12 @@ class ChatService:
         await conversation.delete()
 
     @staticmethod
-    async def add_message(conversation: Conversation, role: MessageRole, content: str) -> ChatMessage:
+    async def add_message(conversation: Conversation, role: MessageRole, content: list[ContentBlock]) -> ChatMessage:
         """添加一条消息"""
         message = await ChatMessage.create(
             conversation=conversation,
             role=role,
-            content=content,
+            content=[block.model_dump() for block in content],
         )
         await conversation.save()
         return message
@@ -57,15 +65,49 @@ class ChatService:
 
     @staticmethod
     async def build_llm_messages(conversation: Conversation) -> list[ModelMessage]:
-        """构建 PydanticAI 格式的 message_history。"""
+        """构建 PydanticAI 格式的 message_history。
+
+    DB 里的 content 是 block 数组 [{type:text|tool_use, ...}]，
+    按 role 和 block type 映射成对应的 PydanticAI Part。
+    """
         messages = await ChatService.get_chat_messages(conversation)
         result: list[ModelMessage] = []
 
         for msg in messages:
+
+            blocks = msg.content or []
+
             if msg.role == "user":
-                result.append(ModelRequest(parts=[UserPromptPart(content=msg.content)]))
+                # user 目前只会有 text block
+                text = "".join(b.get("text", "") for b in blocks if b.get('type') == "text")
+                result.append(ModelRequest(parts=[UserPromptPart(content=text)]))
+
             elif msg.role == "assistant":
-                result.append(ModelResponse(parts=[TextPart(content=msg.content)]))
+                response_parts = []
+                tool_returns: list[ToolReturnPart] = []
+
+                for b in blocks:
+                    b_type = b.get("type")
+                    if b_type == "text":
+                        response_parts.append(TextPart(content=b.get("text", "")))
+                    elif b_type == "tool_use":
+                        # assistant 这一轮发起的 tool 调用
+                        response_parts.append(ToolCallPart(
+                            tool_call_id=b["id"],
+                            tool_name=b["name"],
+                            args=b.get("input") or {}
+                        ))
+                        # 对应的返回结果作为下一条 ModelRequest 注入
+                        tool_returns.append(ToolReturnPart(
+                            tool_call_id=b["id"],
+                            tool_name=b["name"],
+                            content=b.get("output")
+                        ))
+
+                if response_parts:
+                    result.append(ModelResponse(parts=response_parts))
+                if tool_returns:
+                    result.append(ModelRequest(parts=tool_returns))
 
         return result
 
@@ -75,22 +117,23 @@ class ChatService:
         first_msg = await ChatMessage.filter(
             conversation=conversation, role=MessageRole.USER
         ).order_by("created_at").first()
-        if first_msg:
-            conversation.title = first_msg.content[:30]
-            await conversation.save()
+        if not first_msg:
+            return
+        blocks = first_msg.content or []
+        text = "".join(b.get("text", "") for b in blocks if b.get("type") == "text")
+        conversation.title = text[:30] if text else "New chat"
+
+        await conversation.save()
 
     @staticmethod
     async def get_or_create_conversation(
             uuid: str, user: User, provider: str = "deepseek", model: str = "deepseek-chat"
     ) -> tuple[Conversation, bool]:
         """获取或创建对话。返回 (conversation, created)。"""
-        conversation = await Conversation.filter(uuid=uuid,user=user).first()
+        conversation = await Conversation.filter(uuid=uuid, user=user).first()
         if conversation:
             return conversation, False
         conversation = await Conversation.create(
             uuid=uuid, user=user, provider=provider, model=model
         )
         return conversation, True
-
-
-

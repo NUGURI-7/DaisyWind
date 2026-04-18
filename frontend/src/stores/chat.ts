@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { streamChat } from '@/api/chat'
 import type {
   AssistantMessage,
   TextBlock,
+  ToolUseBlock,
+  RenderBlock,
   MessageDeltaPayload,
   MessageStartPayload,
   ContentBlockDeltaPayload,
@@ -11,6 +13,12 @@ import type {
   ContentBlockStopPayload,
   SSEErrorPayload,
   ChatMessage,
+  ContentBlock,
+  ApiToolUseBlock,
+  ToolUseStartPayload,
+  ToolUseStopPayload,
+  ToolUseDeltaPayload,
+  ToolResultPayload,
 } from '@/types/chat'
 
 import {
@@ -62,12 +70,15 @@ export const useChatStore = defineStore('chat', () => {
     messages.value.push({ role: 'user', uuid: userMessageUuid, content: params.content })
     isLoading.value = true
 
+    // 送给后端的 content 是 block 数组（为 P3 多模态预留位置）
+    const contentBlocks: ContentBlock[] = [{ type: 'text', text: params.content }]
+
     try {
       // 消费异步迭代器
       for await (const { event, data } of streamChat({
         conversation_uuid: conversationUuid,
         message_uuid: params.message_uuid,
-        content: params.content,
+        content: contentBlocks,
         provider: params.provider,
         model: params.model,
       })) {
@@ -121,8 +132,75 @@ export const useChatStore = defineStore('chat', () => {
             const d = payload as ContentBlockStopPayload
             if (streaming.value) {
               const block = streaming.value.blocks.find((b) => b.index === d.index)
-              if (block) {
+              if (block && block.type === 'text') {
                 block.status = 'done'
+              }
+            }
+            break
+          }
+
+          case 'tool_use_start': {
+            const d = payload as ToolUseStartPayload
+            if (streaming.value) {
+              const block: ToolUseBlock = {
+                type: 'tool_use',
+                index: d.index,
+                status: 'building',
+                toolCallId: d.tool_call_id,
+                toolName: d.tool_name,
+                toolDisplayName: d.tool_display_name,
+                inputPreview: d.tool_input_preview,
+                partialInputJson: '',
+                resultSummary: null,
+                resultData: null,
+                collapsed: false,
+              }
+              streaming.value.blocks.push(block)
+            }
+            break
+          }
+
+          case 'tool_use_delta': {
+            const d = payload as ToolUseDeltaPayload
+            if (streaming.value) {
+              const block = streaming.value.blocks.find((b) => b.index === d.index)
+              if (block && block.type === 'tool_use') {
+                block.partialInputJson += d.partial_json
+              }
+            }
+            break
+          }
+
+          case 'tool_use_stop': {
+            const d = payload as ToolUseStopPayload
+            if (streaming.value) {
+              const block = streaming.value.blocks.find((b) => b.index === d.index)
+              if (block && block.type === 'tool_use') {
+                block.status = 'calling'
+                // 尝试把累积的 JSON 解析成 inputPreview（失败就保持原样）
+                try {
+                  const parsed = JSON.parse(block.partialInputJson)
+                  // 常见情况：参数是 {"query": "..."}，取第一个字符串值作为 preview
+                  const firstValue = Object.values(parsed).find((v) => typeof v === 'string')
+                  if (typeof firstValue === 'string') {
+                    block.inputPreview = firstValue
+                  }
+                } catch {
+                  // partial_json 不完整或格式异常，保留后端给的 preview
+                }
+              }
+            }
+            break
+          }
+
+          case 'tool_result': {
+            const d = payload as ToolResultPayload
+            if (streaming.value) {
+              const block = streaming.value.blocks.find((b) => b.index === d.index)
+              if (block && block.type === 'tool_use') {
+                block.status = d.status
+                block.resultSummary = d.result_summary
+                block.resultData = d.result_data
               }
             }
             break
@@ -139,6 +217,13 @@ export const useChatStore = defineStore('chat', () => {
 
           case 'message_stop': {
             if (streaming.value) {
+              // 兜底：把所有还处于 'active' 的 text block 收尾，避免最后一段文字没收到
+              // content_block_stop（例如工具轮之后直接走 AgentRunResultEvent 的情况）导致光标继续闪
+              for (const block of streaming.value.blocks) {
+                if (block.type === 'text' && block.status === 'active') {
+                  block.status = 'done'
+                }
+              }
               streaming.value.status = 'completed'
               streaming.value = null
             }
@@ -196,13 +281,54 @@ export const useChatStore = defineStore('chat', () => {
 
       // 后端扁平 messages → 前端渲染结构
       messages.value = detail.messages.map((msg: any): ChatMessage => {
+        // DB 里的 content 已经是 ContentBlock[] 了
+        const blocks = (msg.content ?? []) as ContentBlock[]
         if (msg.role === 'user') {
+          // user 目前只会是 text block，拼成一个字符串给渲染层
+          const text = blocks
+            // type predicate：过滤 text block 并将数组类型从 ContentBlock[] 收窄为 TextBlock[]
+            .filter((b): b is Extract<ContentBlock, { type: 'text' }> => b.type === 'text')
+            .map((b) => b.text)
+            .join('')
+
           return {
             role: 'user',
             uuid: msg.uuid,
-            content: msg.content,
+            content: text,
           }
         }
+
+        // assistant：把 DB 的 ContentBlock[] 映射成 RenderBlock[]
+        const renderBlocks: RenderBlock[] = blocks.map((b, i) => {
+          if (b.type === 'text') {
+            return {
+              type: 'text',
+              index: i,
+              status: 'done',
+              content: b.text,
+            }
+          }
+          // tool_use
+          const apiBlock = b as ApiToolUseBlock
+          const firstValue = Object.values(apiBlock.input).find((v) => typeof v === 'string')
+          return {
+            type: 'tool_use',
+            index: i,
+            status: apiBlock.status,
+            toolCallId: apiBlock.id,
+            toolName: apiBlock.name,
+            toolDisplayName: apiBlock.name, // 回放时没有显示名，先用 name 兜底
+            inputPreview:
+              typeof firstValue === 'string' ? firstValue : JSON.stringify(apiBlock.input),
+            partialInputJson: JSON.stringify(apiBlock.input),
+            resultSummary:
+              typeof apiBlock.output === 'string'
+                ? apiBlock.output
+                : JSON.stringify(apiBlock.output).slice(0, 200),
+            resultData: apiBlock.output,
+            collapsed: true,
+          }
+        })
 
         return {
           role: 'assistant',
@@ -210,7 +336,7 @@ export const useChatStore = defineStore('chat', () => {
           model: detail.model,
           provider: detail.provider,
           status: 'completed',
-          blocks: [{ type: 'text', index: 0, status: 'done', content: msg.content }],
+          blocks: renderBlocks,
           usage: null,
           stopReason: null,
           errorMessage: null,
@@ -246,6 +372,15 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  const lastAssistantUuid = computed(() => {
+    for (let i = messages.value.length - 1; i >= 0; i--) {
+      if (messages.value[i]?.role === 'assistant') {
+        return messages.value[i]?.uuid
+      }
+    }
+    return null
+  })
+
   return {
     messages,
     streaming,
@@ -253,6 +388,7 @@ export const useChatStore = defineStore('chat', () => {
     conversations,
     currentConversationUuid,
     isLoadingConversation,
+    lastAssistantUuid,
     loadConversation,
     newConversation,
     removeConversation,

@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     DEFAULT_PROVIDER: str = "deepseek"
     DEFAULT_MODEL: str = "deepseek-chat"
 
+    # ==================== Tools ====================
+    TAVILY_API_KEY: str = ""          # Web 搜索 Tool（留空则不注册 web_search）
+
     # 文件配置
     STATIC_DIR: str = "static"
     MEDIA_DIR: str = "data/media"  # 新增：用户上传的媒体文件存放路径

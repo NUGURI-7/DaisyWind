@@ -5,9 +5,11 @@
     @date: 2026/4/12 15:15
     @desc: SSE 流式对话端点
 """
+import json
+
 from fastapi import APIRouter, Depends
 from pydantic_ai import Agent, PartStartEvent, TextPart, PartDeltaEvent, TextPartDelta, PartEndEvent, \
-    AgentRunResultEvent
+    AgentRunResultEvent, ToolCallPart, ToolCallPartDelta, FunctionToolResultEvent
 from starlette.responses import StreamingResponse
 
 from backend.app.agents.chat_agent import build_chat_agent
@@ -15,10 +17,16 @@ from backend.app.agents.deps import AgentDeps
 from backend.app.agents.pricing import calc_cost
 from backend.app.core.depends import get_current_user
 from backend.app.models import User, Conversation
-from backend.app.schemas.chat_schema import ChatRequest, MessageRole
+from backend.app.schemas.chat_schema import ChatRequest, MessageRole, TextBlock, ToolUseBlock
 from backend.app.services.chat_service import ChatService
 from backend.app.services.sse import sse_event
 
+# Tool 的人类可读显示名（UI 上呈现，LLM 不看）
+# 每注册一个新 tool 都在这里加一行
+TOOL_DISPLAY_NAMES: dict[str, str] = {
+    "search_notes": "搜索笔记",
+    "tavily_web_search": "Tavily搜索",
+}
 router = APIRouter()
 
 
@@ -31,10 +39,28 @@ async def stream_generator(
         created: bool,
         request: ChatRequest
 ):
-    """SSE async generator：驱动 Agent 流式输出并转换为 SSE 事件。"""
-    assistant_text = ""
+    """SSE async generator：驱动 Agent 流式输出并转换为 SSE 事件。
 
-    yield sse_event("message_start",{
+    本函数同时承担两件事：
+    1. 把 PydanticAI 的事件流翻译成前端约定的 SSE 事件
+    2. 把本轮 assistant 输出的所有 block（text + tool_use）按顺序聚合并落库
+    """
+    # 所有 block 按插入顺序存放；list 下标 = 对外 SSE 的 index（全局单调、绝不复用）
+    # 最后按插入顺序直接持久化
+    blocks: list[dict] = []
+
+    # PydanticAI 的 part.index 是"每一轮 ModelResponse 内的序号"，跨轮会重置
+    # 所以需要"当前轮 part.index -> blocks list 下标"的翻译表
+    # 每次 FunctionToolResultEvent（= 进入下一轮）清空一次
+    part_idx_to_list_idx: dict[int, int] = {}
+
+    # tool_call_id 全局唯一，FunctionToolResultEvent 用它回查 list 下标
+    tool_call_id_to_list_idx: dict[str, int] = {}
+
+    # 工具入参累积 JSON 字符串，key 是 blocks list 下标（全局唯一）
+    tool_input_buffer: dict[int, str] = {}
+
+    yield sse_event("message_start", {
         "conversation_uuid": str(conversation.uuid),
         "message_uuid": request.message_uuid,
         "model": request.model,
@@ -43,39 +69,138 @@ async def stream_generator(
 
     try:
         async for event in agent.run_stream_events(
-            user_input,
-            deps=deps,
-            message_history=llm_messages
+                user_input,
+                deps=deps,
+                message_history=llm_messages
         ):
+            # ============ 文本块 ============
             if isinstance(event, PartStartEvent) and isinstance(event.part, TextPart):
+                blocks.append({"type": "text", "text": event.part.content or ""})
+                li = len(blocks) - 1
+                part_idx_to_list_idx[event.index] = li
+
                 yield sse_event("content_block_start", {
-                    "index": event.index,
+                    "index": li,
                     "type": "text"
                 })
+
                 if event.part.content:
-                    assistant_text += event.part.content
-                    yield sse_event("content_block_delta",{
-                        "index": event.index,
+                    yield sse_event("content_block_delta", {
+                        "index": li,
                         "type": "text_delta",
                         "text": event.part.content
                     })
             # TODO P1: handle ThinkingPart → content_block_start(type="thinking")
-            # TODO P1: handle ToolCallPart → tool_use_start
             elif isinstance(event, PartDeltaEvent) and isinstance(event.delta, TextPartDelta):
-
-                assistant_text += event.delta.content_delta
+                li = part_idx_to_list_idx.get(event.index)
+                if li is None:
+                    continue
+                block = blocks[li]
+                if block and block.get("type") == "text":
+                    block["text"] += event.delta.content_delta
                 yield sse_event("content_block_delta", {
-                    "index": event.index,
+                    "index": li,
                     "type": "text_delta",
                     "text": event.delta.content_delta
                 })
-            elif isinstance(event,PartEndEvent):
-                yield sse_event("content_block_stop", {
-                    "index": event.index
+
+            # ============ Tool 调用块 ============
+            elif isinstance(event, PartStartEvent) and isinstance(event.part, ToolCallPart):
+                tool_name = event.part.tool_name
+                tool_call_id = event.part.tool_call_id
+                blocks.append({
+                    "type": "tool_use",
+                    "id": tool_call_id,
+                    "name": tool_name,
+                    "input": {},
+                    "status": "success",
+                    "output": None,
                 })
+                li = len(blocks) - 1
+                part_idx_to_list_idx[event.index] = li
+                tool_call_id_to_list_idx[tool_call_id] = li
+                tool_input_buffer[li] = ""
+                yield sse_event("tool_use_start", {
+                    "index": li,
+                    "tool_call_id": tool_call_id,
+                    "tool_name": tool_name,
+                    "tool_display_name": TOOL_DISPLAY_NAMES.get(tool_name, tool_name),
+                    "tool_input_preview": "",
+                })
+
+            elif isinstance(event, PartDeltaEvent) and isinstance(event.delta, ToolCallPartDelta):
+                li = part_idx_to_list_idx.get(event.index)
+                if li is None:
+                    continue
+                delta_text = event.delta.args_delta or ""
+                tool_input_buffer[li] = tool_input_buffer.get(li, "") + delta_text
+                block = blocks[li]
+
+                tool_call_id = block["id"] if block.get("type") == "tool_use" else ""
+
+                yield sse_event("tool_use_delta", {
+                    "index": li,
+                    "tool_call_id": tool_call_id,
+                    "type": "input_json_delta",
+                    "partial_json": delta_text
+                })
+
+            # ============ Part 结束（区分 text / tool_use） ============
+
+            elif isinstance(event, PartEndEvent):
+                li = part_idx_to_list_idx.get(event.index)
+                if li is None:
+                    continue
+                block = blocks[li]
+                if block and block.get("type") == "text":
+                    yield sse_event("content_block_stop", {"index": li})
+                elif block and block.get("type") == "tool_use":
+                    # 把累积的 JSON 字符串解析成 dict
+                    try:
+                        parsed_input = json.loads(tool_input_buffer.get(li) or "{}")
+                    except Exception:
+                        parsed_input = {}
+                    block["input"] = parsed_input
+                    yield sse_event("tool_use_stop", {
+                        "index": li,
+                        "tool_call_id": block["id"]
+                    })
+
+            # ============ Tool 执行结果 ============
+            elif isinstance(event, FunctionToolResultEvent):
+                tool_call_id = event.result.tool_call_id
+                li = tool_call_id_to_list_idx.get(tool_call_id)
+
+                if li is not None:
+                    block = blocks[li]
+                    block["output"] = event.result.content
+                    block["status"] = "success"
+
+                    # 给前端生成一个摘要（result_data 仍然附带完整内容）
+                    if isinstance(event.result.content, list):
+                        summary = f"返回 {len(event.result.content)} 项结果"
+                    elif isinstance(event.result.content, str):
+                        summary = event.result.content[:100]
+                    else:
+                        summary = str(event.result.content)[:100]
+
+                    yield sse_event("tool_result", {
+                        "index": li,
+                        "tool_call_id": tool_call_id,
+                        "tool_name": block["name"],
+                        "status": "success",
+                        "result_summary": summary,
+                        "result_data": event.result.content
+                    })
+                # 一轮结束，下一轮 PydanticAI part.index 会从 0 重新计数
+                # 必须清掉旧映射，否则下一轮的 delta 会路由到上一轮的 block
+                part_idx_to_list_idx.clear()
+
+            # ============ Agent 运行完成 ============
+
             elif isinstance(event, AgentRunResultEvent):
                 usage = event.result.usage()
-                cost = calc_cost(request.model, usage.input_tokens,usage.output_tokens)
+                cost = calc_cost(request.model, usage.input_tokens, usage.output_tokens)
                 yield sse_event("message_delta", {
                     "stop_reason": "end_turn",
                     "usage": {
@@ -94,11 +219,27 @@ async def stream_generator(
         })
 
     finally:
-        # 持久化 assistant message
-        if assistant_text:
-            await ChatService.add_message(
-                conversation, MessageRole.ASSISTANT, assistant_text
-            )
+        # 持久化 assistant message：blocks 已是插入顺序，直接遍历
+        if blocks:
+            content_blocks: list = []
+            for ob in blocks:
+                if ob["type"] == "text":
+                    if ob.get("text"):
+                        content_blocks.append(TextBlock(type="text", text=ob["text"]))
+                elif ob["type"] == "tool_use":
+                    content_blocks.append(ToolUseBlock(
+                        type="tool_use",
+                        id=ob["id"],
+                        name=ob["name"],
+                        input=ob.get("input") or {},
+                        status=ob.get("status", "success"),
+                        output=ob.get("output"),
+                    ))
+
+            if content_blocks:
+                await ChatService.add_message(
+                    conversation, MessageRole.ASSISTANT, content_blocks
+                )
 
             if created:
                 await ChatService.update_title_from_first_message(conversation)
@@ -119,6 +260,9 @@ async def send_message(request: ChatRequest, user: User = Depends(get_current_us
 
     llm_messages = await ChatService.build_llm_messages(conversation)
 
+    # 给 agent 的 user_input 必须是字符串，从 block 数组里提取所有 text block
+    user_input = "".join(b.text for b in request.content if b.type == "text")
+
     agent = build_chat_agent(request.provider, request.model)
     deps = AgentDeps(user=user, conversation=conversation)
 
@@ -126,8 +270,8 @@ async def send_message(request: ChatRequest, user: User = Depends(get_current_us
         stream_generator(
             agent=agent,
             deps=deps,
-            user_input=request.content,
-            llm_messages=llm_messages[:-1], # 最后一条是刚存的 user msg，已作为 user_input 传入
+            user_input=user_input,
+            llm_messages=llm_messages[:-1],  # 最后一条是刚存的 user msg，已作为 user_input 传入
             conversation=conversation,
             created=created,
             request=request
@@ -138,12 +282,3 @@ async def send_message(request: ChatRequest, user: User = Depends(get_current_us
             "X-Accel-Buffering": "no"
         }
     )
-
-
-
-
-
-
-
-
-

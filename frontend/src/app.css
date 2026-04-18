@@ -507,6 +507,7 @@
  * ============================================= */
 @theme inline {
   /* 颜色 */
+  --color-brand: #2f6b53; /* 深墨绿 - 流式 / 品牌色 */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

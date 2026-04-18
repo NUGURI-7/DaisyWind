@@ -38,6 +38,55 @@ export interface SSEErrorPayload {
   message: string
 }
 
+// ==================== DB / API Content Block ====================
+// 这是存进后端 ChatMessage.content 字段、以及从详情接口回放的结构。
+// 和渲染层的 RenderBlock 概念接近，但不带 UI 状态（status / index）。
+export interface ApiTextBlock {
+  type: 'text'
+  text: string
+}
+
+export interface ApiToolUseBlock {
+  type: 'tool_use'
+  id: string
+  name: string
+  input: Record<string, unknown>
+  status: 'success' | 'error'
+  output: unknown
+}
+
+export type ContentBlock = ApiTextBlock | ApiToolUseBlock
+
+// ==================== P1 Tool 事件 Payload ====================
+
+export interface ToolUseStartPayload {
+  index: number
+  tool_call_id: string
+  tool_name: string
+  tool_display_name: string
+  tool_input_preview: string
+}
+export interface ToolUseStopPayload {
+  index: number
+  tool_call_id: string
+}
+
+export interface ToolResultPayload {
+  index: number
+  tool_call_id: string
+  tool_name: string
+  status: 'success' | 'error'
+  result_summary: string
+  result_data: unknown
+}
+
+export interface ToolUseDeltaPayload {
+  index: number
+  tool_call_id: string
+  type: 'input_json_delta'
+  partial_json: string
+}
+
 // ==================== 前端渲染状态 ====================
 
 export interface TextBlock {
@@ -47,8 +96,21 @@ export interface TextBlock {
   content: string
 }
 
-// P1 再加 ThinkingBlock / ToolUseBlock
-export type RenderBlock = TextBlock
+export interface ToolUseBlock {
+  type: 'tool_use'
+  index: number
+  status: 'building' | 'calling' | 'success' | 'error'
+  toolCallId: string
+  toolName: string
+  toolDisplayName: string
+  inputPreview: string
+  partialInputJson: string
+  resultSummary: string | null
+  resultData: unknown | null
+  collapsed: boolean
+}
+
+export type RenderBlock = TextBlock | ToolUseBlock
 
 export interface AssistantMessage {
   role: 'assistant'

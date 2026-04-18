@@ -33,7 +33,7 @@ class ChatMessage(BaseModel, UUIDModel, TimestampMixin):
     """聊天消息"""
 
     role = fields.CharField(max_length=20)
-    content = fields.TextField()
+    content = fields.JSONField()
     token_count = fields.IntField(null=True)
     cost = fields.DecimalField(max_digits=10, decimal_places=6, null=True)
 

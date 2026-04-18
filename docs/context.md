@@ -56,12 +56,19 @@
 - **前端 Chat UI**：Pinia store 驱动的事件级块状态机、fetch-based SSE 消费（非 EventSource）、Sidebar 内嵌 `Recents` 对话列表、URL 同步 `/chat/:uuid?`、切换/新建/删除完整闭环。
 - **关键细节**：`Conversation.model_str` 重命名为 `Conversation.model`（Pydantic v2 对 `model` 字段名无警告）；高度链用 `min-h-0` + `shrink-0` 解决 flex 输入框贴底问题；`get_conversation_or_404` 补齐 `return`。
 
+## 已完成：Chat 模块 P1（2026-04-18）
+- **Tool 系统**：`backend/app/tools/` 下 `search_notes` 和 `tavily_web_search` 两个工具，通过 `@agent.tool` 注册到 `chat_agent.py`，system prompt 增加英文使用时机指引。
+- **SSE 协议扩展**：新增 `tool_use_start` / `tool_use_delta` / `tool_use_stop` / `tool_result` 事件。核心设计：用"插入顺序 list + 每轮 part.index → list 下标翻译表 + tool_call_id 全局回查表"解决 PydanticAI `event.index` 在多轮 ModelResponse 间重置导致的块路由错乱；`FunctionToolResultEvent` 结束时清空 per-round 翻译表。
+- **DB JSONB blocks**：`ChatMessage.content` 改为 JSONB 数组（迁移 `0005_chat_message_content_to_jsonb.py`），`text` / `tool_use` 混合块按插入顺序持久化。
+- **前端**：`MessageList.vue` 按 `block.type` 分派到 `TextBlock` / `ToolUseBlock`；`ToolUseBlock.vue` 采用 Claude 风格简约样式（工具名 + 状态 icon + 折叠面板）。
+- **3D Spinner**：`components/common/ThreeSpinner.vue`（Three.js 线框）替代闪烁光标；仅在最新 assistant 消息的最后一个 text block 下方持续旋转（由 `chat.lastAssistantUuid` + `isLastTextBlock` 控制）。
+- **Tool 显示名字典**：`TOOL_DISPLAY_NAMES` 在 `stream.py` 集中维护。
+
 ## 其他进行中
 - Settings 入口已接入 ThemeSwitcher（Popover 弹出，含 12 主题色 + Light/Dark 切换）。
 
 ## 下一步
-- **当前重点**：进入 Chat P1 — Tool 调用与多 Agent（`@agent.tool` 工具系统、Orchestrator 模式、Web 搜索 Tool、Notes 搜索 Tool、前端 Tool 调用卡片渲染）。
-- **后续方向**：P2（RAG 知识库检索，pgvector + Embedding）。详见 `docs/roadmap.md`。
+- **当前重点**：进入 Chat P2 — RAG 知识库检索（pgvector + Embedding）。详见 `docs/roadmap.md`。
 - **流式渲染规范**：SSE 事件协议、前端块级状态机、组件映射。详见 `docs/streaming-render.md`。
 
 ## 开发注意事项
@@ -76,6 +83,12 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-04-18（Chat 模块 P1 完成：Tool 调用接入）
+- 后端接入两个 tool（`search_notes` / `tavily_web_search`），SSE 协议扩展 tool 事件族。
+- 解决多轮 Tool 调用的块顺序 bug：改用"插入顺序 list + 每轮 part.index 翻译表"路由 PydanticAI 事件，避免 `event.index` 跨轮复用导致的块覆盖和参数拼接错乱。
+- DB `ChatMessage.content` 迁移为 JSONB，支持 text/tool_use 混合块数组持久化。
+- 前端 `ToolUseBlock.vue` 采用 Claude 风格极简样式；闪烁光标换成 `ThreeSpinner`（Three.js 线框），仅挂在最新消息的最后一个 text block 下。
+
 ### 2026-04-17（Chat 模块 P0 完成，M1 里程碑达成）
 - 后端完成 Provider 工厂 + PydanticAI Agent + SSE 结构化流式接口 + 对话 CRUD 持久化。详见本文档上方「已完成：Chat 模块 P0」小节。
 - 前端完成 Pinia 事件驱动状态机 + fetch SSE 消费器 + Sidebar 内嵌 `Recents` 列表 + URL 路由同步。

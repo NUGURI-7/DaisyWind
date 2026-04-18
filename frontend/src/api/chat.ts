@@ -1,5 +1,6 @@
 import { del, get } from '@/request'
 import type { Ref } from 'vue'
+import type { ContentBlock } from '@/types/chat'
 
 interface SSEEvent {
   event: string
@@ -57,7 +58,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:7999/api
 export async function* streamChat(params: {
   conversation_uuid: string
   message_uuid: string
-  content: string
+  content: ContentBlock[]
   provider: string
   model: string
 }): AsyncGenerator<SSEEvent> {
@@ -92,7 +93,7 @@ export interface ConversationDetail extends ConversationSummary {
   messages: Array<{
     uuid: string
     role: 'user' | 'assistant' | 'system'
-    content: string
+    content: ContentBlock[]
     created_at: string
   }>
 }
