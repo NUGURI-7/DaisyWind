@@ -4,8 +4,7 @@
     - 大屏 (lg+): 正常的 Flex 平铺布局，Sidebar 挤压 Main 区域。
     - 小屏: Sidebar 变为 fixed 定位，浮在 Main 之上，并配有可点击关闭的半透明黑色遮罩 (Backdrop)。
   -->
-  <div class="flex h-screen relative overflow-hidden bg-background">
-    
+  <div class="flex h-[100dvh] relative overflow-hidden bg-background">
     <!-- 移动端遮罩 Backdrop (仅小屏且展开时显示) -->
     <Transition
       enter-active-class="transition-opacity duration-300 ease-out"
@@ -15,7 +14,7 @@
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div 
+      <div
         v-if="!isLargeScreen && isDrawerOpen"
         class="fixed inset-0 z-40 bg-black/50 lg:hidden"
         @click="isDrawerOpen = false"
@@ -38,8 +37,8 @@
     <div class="flex-1 flex flex-col min-w-0 h-full relative z-0">
       <!-- 移动端 toggle 按钮 (仅小屏显示) -->
       <div class="shrink-0 p-3 lg:hidden flex items-center border-b border-border bg-background">
-        <button 
-          @click="isDrawerOpen = !isDrawerOpen" 
+        <button
+          @click="isDrawerOpen = !isDrawerOpen"
           class="flex items-center justify-center size-9 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           aria-label="Toggle sidebar"
         >
@@ -52,7 +51,6 @@
         <MainContent />
       </div>
     </div>
-    
   </div>
 </template>
 

@@ -12,7 +12,7 @@ applyTheme()
 </script>
 
 <template>
-  <div>
+  <div class="h-[100dvh] w-full">
     <Toaster
       :closeButton="true"
       closeButtonPosition="bottom-right"

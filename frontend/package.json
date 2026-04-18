@@ -29,6 +29,7 @@
     "reka-ui": "^2.9.1",
     "tailwindcss": "^4.1.18",
     "three": "^0.184.0",
+    "uuid": "^13.0.0",
     "vue": "^3.5.27",
     "vue-router": "^4.6.4",
     "vue-sonner": "^2.0.9"
@@ -39,6 +40,7 @@
     "@types/node": "^24.10.9",
     "@types/nprogress": "^0.2.3",
     "@types/three": "^0.184.0",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/tsconfig": "^0.8.1",

@@ -28,6 +28,8 @@ import {
   type ConversationSummary,
 } from '@/api/chat'
 
+import { v4 as uuidv4 } from 'uuid'
+
 export const useChatStore = defineStore('chat', () => {
   // 当前对话的消息列表（user + assistant 交替）
   const messages = ref<ChatMessage[]>([])
@@ -64,7 +66,7 @@ export const useChatStore = defineStore('chat', () => {
     // 记录这次是否是"新对话"——用于发送完成后决定是否刷新侧栏
     const isNewConversation = !conversations.value.some((c: any) => c.uuid === conversationUuid)
 
-    const userMessageUuid = crypto.randomUUID()
+    const userMessageUuid = uuidv4()
 
     // 先把 user message 加到列表里（乐观渲染）
     messages.value.push({ role: 'user', uuid: userMessageUuid, content: params.content })
@@ -356,7 +358,7 @@ export const useChatStore = defineStore('chat', () => {
   function newConversation() {
     messages.value = []
     streaming.value = null
-    currentConversationUuid.value = crypto.randomUUID()
+    currentConversationUuid.value = uuidv4()
   }
 
   /**
