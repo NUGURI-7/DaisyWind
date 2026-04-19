@@ -20,13 +20,19 @@
         <!-- Assistant 消息 -->
         <div v-else class="flex flex-col gap-2">
           <template v-for="block in msg.blocks" :key="block.index">
-            <TextBlock
-              v-if="block.type === 'text'"
-              :block="block"
-              :keep-spinner="msg.uuid === chat.lastAssistantUuid && isLastTextBlock(msg, block)"
-            />
+            <TextBlock v-if="block.type === 'text'" :block="block" />
             <ToolUseBlock v-else-if="block.type === 'tool_use'" :block="block" />
           </template>
+
+          <!-- 将 Spinner 挂载在 Message 级别 -->
+          <!-- 显示条件：正在流式输出，或者是当前对话的最新一条助理回复 -->
+          <ThreeSpinner
+            v-if="msg.status === 'streaming' || msg.uuid === chat.lastAssistantUuid"
+            :size="36"
+            :active="msg.status === 'streaming'"
+            class="mt-2"
+          />
+
           <p v-if="msg.status === 'error'" class="text-destructive text-sm">
             {{ msg.errorMessage }}
           </p>
@@ -67,6 +73,7 @@ import { PhArrowDown } from '@phosphor-icons/vue'
 import TextBlock from './blocks/TextBlock.vue'
 import ToolUseBlock from './blocks/ToolUseBlock.vue'
 import type { ChatMessage, RenderBlock } from '@/types/chat'
+import ThreeSpinner from '@/components/common/ThreeSpinner.vue'
 
 const chat = useChatStore()
 
