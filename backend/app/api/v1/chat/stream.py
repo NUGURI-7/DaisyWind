@@ -21,12 +21,6 @@ from backend.app.schemas.chat_schema import ChatRequest, MessageRole, TextBlock,
 from backend.app.services.chat_service import ChatService
 from backend.app.services.sse import sse_event
 
-# Tool 的人类可读显示名（UI 上呈现，LLM 不看）
-# 每注册一个新 tool 都在这里加一行
-TOOL_DISPLAY_NAMES: dict[str, str] = {
-    "search_notes": "搜索笔记",
-    "tavily_web_search": "Tavily搜索",
-}
 router = APIRouter()
 
 
@@ -122,10 +116,9 @@ async def stream_generator(
                 tool_input_buffer[li] = ""
                 yield sse_event("tool_use_start", {
                     "index": li,
-                    "tool_call_id": tool_call_id,
-                    "tool_name": tool_name,
-                    "tool_display_name": TOOL_DISPLAY_NAMES.get(tool_name, tool_name),
-                    "tool_input_preview": "",
+                    "id": tool_call_id,
+                    "name": tool_name,
+                    "input_preview": "",
                 })
 
             elif isinstance(event, PartDeltaEvent) and isinstance(event.delta, ToolCallPartDelta):
@@ -140,7 +133,7 @@ async def stream_generator(
 
                 yield sse_event("tool_use_delta", {
                     "index": li,
-                    "tool_call_id": tool_call_id,
+                    "id": tool_call_id,
                     "type": "input_json_delta",
                     "partial_json": delta_text
                 })
@@ -163,7 +156,7 @@ async def stream_generator(
                     block["input"] = parsed_input
                     yield sse_event("tool_use_stop", {
                         "index": li,
-                        "tool_call_id": block["id"]
+                        "id": block["id"]
                     })
 
             # ============ Tool 执行结果 ============
@@ -186,8 +179,8 @@ async def stream_generator(
 
                     yield sse_event("tool_result", {
                         "index": li,
-                        "tool_call_id": tool_call_id,
-                        "tool_name": block["name"],
+                        "id": tool_call_id,
+                        "name": block["name"],
                         "status": "success",
                         "result_summary": summary,
                         "result_data": event.result.content

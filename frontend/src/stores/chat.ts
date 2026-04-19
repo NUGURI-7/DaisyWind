@@ -148,10 +148,9 @@ export const useChatStore = defineStore('chat', () => {
                 type: 'tool_use',
                 index: d.index,
                 status: 'building',
-                toolCallId: d.tool_call_id,
-                toolName: d.tool_name,
-                toolDisplayName: d.tool_display_name,
-                inputPreview: d.tool_input_preview,
+                id: d.id,
+                name: d.name,
+                inputPreview: d.input_preview,
                 partialInputJson: '',
                 resultSummary: null,
                 resultData: null,
@@ -317,9 +316,8 @@ export const useChatStore = defineStore('chat', () => {
             type: 'tool_use',
             index: i,
             status: apiBlock.status,
-            toolCallId: apiBlock.id,
-            toolName: apiBlock.name,
-            toolDisplayName: apiBlock.name, // 回放时没有显示名，先用 name 兜底
+            id: apiBlock.id, // <-- 这里
+            name: apiBlock.name, // <-- 这里
             inputPreview:
               typeof firstValue === 'string' ? firstValue : JSON.stringify(apiBlock.input),
             partialInputJson: JSON.stringify(apiBlock.input),

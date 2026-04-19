@@ -83,6 +83,13 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-04-19（Chat 模块架构反思与重构阶段 B&E 完成）
+- **架构反思沉淀**：与 AI 深度探讨了流式渲染、Tool Call 协议的复杂性，明确了"信息进协议，呈现留前端"、"Rule of Three 原则"等架构思想，产出 `docs/chat-architecture-reflection.md`。
+- **命名对齐 (Phase B)**：消除了前后端 SSE 协议和前端类型接口中多余的 `tool_` 前缀，将字段统一为 `id`、`name` 等纯净命名，消灭了手写映射导致的 Bug 隐患。
+- **砍掉 display_name (Phase E)**：基于"极简协议"的理念，彻底移除了后端的 `TOOL_DISPLAY_NAMES` 映射表。前端 UI 直接渲染原生 `block.name`。
+- **UX 体验增强**：在 `ToolUseBlock.vue` 中加入 `watch` 监听，实现了 Tool 气泡"运行时展开，执行完毕自动折叠"的丝滑效果。
+- **下一阶段准备**：前端映射函数抽离（Phase C）与 `BlockHandler` 抽象（Phase D）将留到 P2 阶段引入 `citation` Block 时再进行，避免过早抽象。
+
 ### 2026-04-18（Chat 模块 P1 完成：Tool 调用接入）
 - 后端接入两个 tool（`search_notes` / `tavily_web_search`），SSE 协议扩展 tool 事件族。
 - 解决多轮 Tool 调用的块顺序 bug：改用"插入顺序 list + 每轮 part.index 翻译表"路由 PydanticAI 事件，避免 `event.index` 跨轮复用导致的块覆盖和参数拼接错乱。

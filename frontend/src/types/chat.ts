@@ -61,20 +61,19 @@ export type ContentBlock = ApiTextBlock | ApiToolUseBlock
 
 export interface ToolUseStartPayload {
   index: number
-  tool_call_id: string
-  tool_name: string
-  tool_display_name: string
-  tool_input_preview: string
+  id: string
+  name: string
+  input_preview: string
 }
 export interface ToolUseStopPayload {
   index: number
-  tool_call_id: string
+  id: string
 }
 
 export interface ToolResultPayload {
   index: number
-  tool_call_id: string
-  tool_name: string
+  id: string
+  name: string
   status: 'success' | 'error'
   result_summary: string
   result_data: unknown
@@ -82,7 +81,7 @@ export interface ToolResultPayload {
 
 export interface ToolUseDeltaPayload {
   index: number
-  tool_call_id: string
+  id: string
   type: 'input_json_delta'
   partial_json: string
 }
@@ -100,9 +99,8 @@ export interface ToolUseBlock {
   type: 'tool_use'
   index: number
   status: 'building' | 'calling' | 'success' | 'error'
-  toolCallId: string
-  toolName: string
-  toolDisplayName: string
+  id: string
+  name: string
   inputPreview: string
   partialInputJson: string
   resultSummary: string | null

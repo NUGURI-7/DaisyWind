@@ -25,7 +25,7 @@
       </span>
 
       <!-- 工具名 -->
-      <span class="shrink-0 text-foreground/80 font-medium">{{ block.toolDisplayName }}</span>
+      <span class="shrink-0 text-foreground/80 font-medium">{{ block.name }}</span>
 
       <!-- 展开箭头 -->
       <PhCaretDown
@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { PhCaretDown, PhWrench, PhSpinner, PhXCircle } from '@phosphor-icons/vue'
 import type { ToolUseBlock } from '@/types/chat'
 
@@ -67,6 +67,18 @@ const props = defineProps<{
 
 // 默认折叠状态跟随 block.collapsed（历史消息折叠，实时流默认展开）
 const collapsed = ref(props.block.collapsed)
+
+watch(
+  () => props.block.status,
+  (newStatus, oldStatus) => {
+    if (
+      (oldStatus === 'building' || oldStatus === 'calling') &&
+      (newStatus === 'success' || newStatus === 'error')
+    ) {
+      collapsed.value = true
+    }
+  },
+)
 
 const isRunning = computed(
   () => props.block.status === 'building' || props.block.status === 'calling',
