@@ -10,6 +10,7 @@ from pydantic_ai import Agent
 
 from backend.app.agents.deps import AgentDeps
 from backend.app.agents.providers import build_model
+from backend.app.tools.brave_web_search_tool import brave_web_search
 from backend.app.tools.notes_tool import search_notes
 from backend.app.tools.tavily_web_search_tool import tavily_web_search
 
@@ -28,7 +29,7 @@ written, use the `search_notes` tool to look them up by keyword.
 
 When the user asks about time-sensitive information (current news, weather,
 prices, recent releases) or facts that may have changed since your training
-cutoff, use the `tavily_web_search` tool to search the public web. Do not use
+cutoff, use the `tavily_web_search` or `brave_web_search` tool to search the public web. Do not use
 it for questions you can confidently answer from general knowledge.
 """
 
@@ -52,5 +53,6 @@ def build_chat_agent(provider: str, model_name: str) -> Agent[AgentDeps, str]:
 
     agent.tool(search_notes)
     agent.tool(tavily_web_search)
+    agent.tool(brave_web_search)
 
     return agent

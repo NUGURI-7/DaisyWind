@@ -27,7 +27,7 @@
          大屏时 static 定位，占据真实文档流宽度
     -->
     <div
-      class="fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0"
+      class="fixed h-full inset-y-0 left-0 z-50 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0"
       :class="[!isLargeScreen && !isDrawerOpen ? '-translate-x-full' : 'translate-x-0']"
     >
       <Sidebar :is-open="isDrawerOpen" @toggle="isDrawerOpen = !isDrawerOpen" />

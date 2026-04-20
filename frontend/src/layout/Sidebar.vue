@@ -14,7 +14,7 @@
   -->
   <aside
     :data-collapsed="!isOpen ? '' : undefined"
-    class="group/sidebar flex min-h-full flex-col bg-sidebar overflow-x-clip transition-[width] data-[collapsed]:w-14 w-64 border-r border-sidebar-border"
+    class="group/sidebar flex h-full flex-col bg-sidebar overflow-x-clip transition-[width] data-[collapsed]:w-14 w-64 border-r border-sidebar-border"
     style="transition-duration: 300ms"
   >
     <!-- 顶部栏：图标始终锚定左侧，toggle 按钮在右侧，sidebar 向右扩展 -->
@@ -126,9 +126,43 @@
         </Popover>
       </TooltipProvider>
     </nav>
-    <!-- Recents 对话列表：折叠时隐藏 -->
-    <div class="flex-1 min-h-0 flex flex-col">
-      <ConversationList class="group-data-[collapsed]/sidebar:hidden" />
+    <!-- 动态模块列表区域：折叠时隐藏 -->
+    <!-- 外层必须加 perspective (如 perspective-[1000px]) 来开启 3D 空间感 -->
+    <div
+      class="flex-1 min-h-0 flex flex-col overflow-hidden relative group-data-[collapsed]/sidebar:hidden perspective-[1000px]"
+    >
+      <!-- 
+        使用 rotate-y 进行 3D 翻转
+        - enter-from: 初始状态是转过去 90 度 (不可见)
+        - enter-to / leave-from: 正常状态 (0 度)
+        - leave-to: 离开时转到负 90 度 (不可见)
+      -->
+      <Transition
+        enter-active-class="transition-all duration-300 ease-out"
+        enter-from-class="opacity-0 [transform:rotateY(90deg)]"
+        enter-to-class="opacity-100 [transform:rotateY(0deg)]"
+        leave-active-class="transition-all duration-200 ease-in"
+        leave-from-class="opacity-100 [transform:rotateY(0deg)]"
+        leave-to-class="opacity-0 [transform:rotateY(-90deg)]"
+        mode="out-in"
+      >
+        <!-- Notes 列表 (占位) -->
+        <div v-if="isNotesMode" class="flex-1 min-h-0 flex flex-col px-2 w-full origin-center">
+          <h3
+            class="shrink-0 px-2 pt-4 pb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider"
+          >
+            Notes
+          </h3>
+          <div class="flex-1 min-h-0 overflow-y-auto">
+            <p class="text-muted-foreground text-xs text-center px-2 py-4">
+              这里是 Notes 列表占位区
+            </p>
+          </div>
+        </div>
+
+        <!-- Chat 列表 -->
+        <ConversationList v-else class="w-full origin-center" />
+      </Transition>
     </div>
 
     <!-- 底部用户信息 -->
@@ -137,7 +171,7 @@
       之前 p-2 在折叠时让按钮偏移 8px，配合 overflow-x-clip 导致右侧 8px 被裁掉
       现在折叠时 padding=0，btn-square(56px) 刚好填满 sidebar(56px)
     -->
-    <div class="w-full p-2">
+    <div class="w-full p-2 mt-auto shrink-0 border-t border-sidebar-border">
       <div class="w-full">
         <button
           ref="userBtnRef"
@@ -230,7 +264,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
@@ -243,11 +277,14 @@ defineEmits(['toggle'])
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { PhAirplaneTakeoff, PhClock } from '@phosphor-icons/vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { userAuthStore } from '@/stores/auth'
 import { PhSidebarSimple, PhNotePencil, PhSliders, PhPlus } from '@phosphor-icons/vue'
 
 const authStore = userAuthStore()
+const route = useRoute()
+
+const isNotesMode = computed(() => route.path.startsWith('/notes'))
 
 dayjs.extend(relativeTime)
 const fromNow = (date: any) => (date ? dayjs(date).fromNow() : 'Never')
