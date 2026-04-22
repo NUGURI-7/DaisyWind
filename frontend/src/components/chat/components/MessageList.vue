@@ -13,7 +13,8 @@
         <!-- User 消息 -->
         <div v-if="msg.role === 'user'" class="flex justify-end">
           <div class="max-w-[80%] rounded-2xl bg-muted text-foreground px-4 py-2.5">
-            <p class="whitespace-pre-wrap wrap-break-word">{{ msg.content }}</p>
+            <!-- 替换为 MarkdownRender，并且传入 is-user="true" 触发用户模式逻辑 -->
+            <MarkdownRender :content="msg.content" :is-user="true" />
           </div>
         </div>
 
@@ -74,6 +75,7 @@ import TextBlock from './blocks/TextBlock.vue'
 import ToolUseBlock from './blocks/ToolUseBlock.vue'
 import type { ChatMessage, RenderBlock } from '@/types/chat'
 import ThreeSpinner from '@/components/common/ThreeSpinner.vue'
+import MarkdownRender from './MarkdownRender.vue'
 
 const chat = useChatStore()
 

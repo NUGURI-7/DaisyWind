@@ -6,10 +6,9 @@
       >
         <textarea
           v-model="input"
-          :disabled="chat.isLoading"
           rows="1"
           placeholder="发送消息..."
-          class="flex-1 resize-none bg-transparent outline-none placeholder:text-muted-foreground disabled:opacity-50 max-h-40"
+          class="flex-1 resize-none bg-transparent outline-none placeholder:text-muted-foreground max-h-40"
           @compositionstart="isComposing = true"
           @compositionend="isComposing = false"
           @keydown.enter.exact="handleEnter"

@@ -1,5 +1,113 @@
+@plugin "@tailwindcss/typography";
 @import 'tailwindcss';
 @import 'tw-animate-css';
+/* 引入 highlight.js 的基础样式 (可以选择你喜欢的，如 github.css, a11y-dark.css 等) */
+@import 'highlight.js/styles/github.css';
+
+/* ==========================================
+   Markdown & Typography overrides (Chat 模块)
+   ========================================== */
+
+/* 修复用户发送的消息因为被包在 .prose 里而丢失了原本的换行符 */
+.prose.break-words p {
+  white-space: pre-wrap;
+}
+
+/* 
+  绝对剥夺 .prose 对代码块内部容器的所有控制权！
+  用 :is() 提升权重，彻底清空默认内外边距、背景色和圆角
+*/
+.prose :is(pre, code) {
+  background-color: transparent !important;
+  color: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  font-size: inherit !important;
+}
+
+/* 去掉 markdown-it 默认给 code 添加的反引号 (`) 伪元素 */
+.prose code::before,
+.prose code::after {
+  content: none !important;
+}
+
+/* 给代码块包裹层增加细微的过渡和精美的边框阴影 */
+/* 这里我们去掉了多余的背景色，让它完全接管卡片外观 */
+.code-block-wrapper {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  background-color: var(--background) !important;
+}
+
+.code-block-wrapper:hover {
+  border-color: var(--border);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* 保证内部的代码文本不要被强行加粗，且行高舒服 */
+.code-block-wrapper pre {
+  font-weight: 400 !important;
+}
+
+/* 解决 highlight.js 的默认背景覆盖问题 */
+.hljs {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* 解决长代码的横向滚动，保留丝滑滚动条 */
+.code-block-wrapper .overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) transparent;
+}
+.code-block-wrapper .overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+.code-block-wrapper .overflow-x-auto::-webkit-scrollbar-thumb {
+  background-color: var(--muted);
+  border-radius: 4px;
+}
+
+/* 为 .prose 中自动生成的 table 添加横向滚动条保护，防止长表格撑爆页面宽度 */
+.prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 终极杀手锏：彻底剥夺 prose 插件对代码块包装器及内部一切元素的上下外边距控制 */
+.prose .code-block-wrapper,
+.prose .code-block-wrapper pre,
+.prose .code-block-wrapper code,
+.prose .code-block-wrapper div {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* 并且确保最外层包装器在段落之间有合适的、我们自己控制的间距 */
+.prose .code-block-wrapper {
+  margin-top: 1.5em !important;
+  margin-bottom: 1.5em !important;
+}
+
+.code-block-wrapper .overflow-x-auto {
+  scrollbar-gutter: stable;
+}
+
+.code-block-wrapper {
+  transition: none;
+}
+.code-block-wrapper:hover {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
 
 @custom-variant dark (&:is(.dark *));
 

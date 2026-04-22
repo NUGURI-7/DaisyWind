@@ -14,7 +14,7 @@
   -->
   <aside
     :data-collapsed="!isOpen ? '' : undefined"
-    class="group/sidebar flex h-full flex-col bg-sidebar overflow-x-clip transition-[width] data-[collapsed]:w-14 w-64 border-r border-sidebar-border"
+    class="group/sidebar flex h-full flex-col bg-sidebar overflow-x-clip transition-[width] data-[collapsed]:w-14 w-72 border-r border-sidebar-border"
     style="transition-duration: 300ms"
   >
     <!-- 顶部栏：图标始终锚定左侧，toggle 按钮在右侧，sidebar 向右扩展 -->
@@ -146,19 +146,8 @@
         leave-to-class="opacity-0 [transform:rotateY(-90deg)]"
         mode="out-in"
       >
-        <!-- Notes 列表 (占位) -->
-        <div v-if="isNotesMode" class="flex-1 min-h-0 flex flex-col px-2 w-full origin-center">
-          <h3
-            class="shrink-0 px-2 pt-4 pb-1 text-xs font-medium text-muted-foreground uppercase tracking-wider"
-          >
-            Notes
-          </h3>
-          <div class="flex-1 min-h-0 overflow-y-auto">
-            <p class="text-muted-foreground text-xs text-center px-2 py-4">
-              这里是 Notes 列表占位区
-            </p>
-          </div>
-        </div>
+        <!-- Notes 列表 -->
+        <NoteList v-if="isNotesMode" class="w-full origin-center" />
 
         <!-- Chat 列表 -->
         <ConversationList v-else class="w-full origin-center" />
@@ -269,6 +258,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 import ConversationList from '@/components/chat/components/ConversationList.vue'
+import NoteList from '@/components/notes/NoteList.vue'
 defineProps<{
   isOpen: boolean
 }>()

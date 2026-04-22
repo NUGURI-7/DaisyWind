@@ -35,20 +35,9 @@
 
     <!-- Main 区域 -->
     <div class="flex-1 flex flex-col min-w-0 h-full relative z-0">
-      <!-- 移动端 toggle 按钮 (仅小屏显示) -->
-      <div class="shrink-0 p-3 lg:hidden flex items-center border-b border-border bg-background">
-        <button
-          @click="isDrawerOpen = !isDrawerOpen"
-          class="flex items-center justify-center size-9 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-          aria-label="Toggle sidebar"
-        >
-          <PhSidebarSimple :size="20" />
-        </button>
-      </div>
-
       <!-- 内容区 -->
       <div class="flex-1 min-h-0">
-        <MainContent />
+        <MainContent @toggle-sidebar="isDrawerOpen = !isDrawerOpen" />
       </div>
     </div>
   </div>
@@ -57,7 +46,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useBreakpoints } from '@vueuse/core'
-import { PhSidebarSimple } from '@phosphor-icons/vue'
 
 import MainContent from './MainContent.vue'
 import Sidebar from './Sidebar.vue'

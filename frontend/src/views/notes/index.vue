@@ -1,88 +1,8 @@
 <template>
-  <div class="flex h-full">
-    <!-- 左侧笔记列表 -->
-    <div
-      class="shrink-0 overflow-hidden transition-[width] duration-300"
-      :class="listVisible ? 'w-64' : 'w-0'"
-    >
-      <div
-        class="w-64 h-full flex flex-col border-r border-border bg-sidebar/30 transition-opacity duration-200"
-        :class="listVisible ? 'opacity-100 delay-100' : 'opacity-0'"
-      >
-        <div class="h-14 flex items-center px-4 border-b border-border/40 shrink-0">
-          <div class="new-note-wrap w-full">
-            <button
-              @click="createNote"
-              class="flex items-center w-full h-9 px-3 gap-2 rounded-md text-sm font-medium border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 cursor-pointer"
-            >
-              <PhPlus :size="14" />
-              New Note
-            </button>
-          </div>
-        </div>
-
-        <div class="flex-1 overflow-y-auto">
-          <button
-            v-for="(id, idx) in store.orderedIds"
-            :key="id"
-            @click="selectNote(id)"
-            class="group relative w-full text-left p-3 transition-all duration-200 cursor-pointer border-b border-border/50 hover:bg-muted/50 focus-visible:outline-none focus-visible:bg-muted animate-[slideIn_0.3s_ease_both]"
-            :class="[id === store.selectedId ? 'bg-muted/80 pr-2 pl-4' : 'hover:pl-4']"
-            :style="{ animationDelay: `${idx * 35}ms` }"
-          >
-            <!-- 左侧指示线：选中常驻，hover 滑入 -->
-            <div
-              class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 rounded-r-full transition-all duration-300"
-              :class="id === store.selectedId
-                ? 'h-3/5 opacity-100 bg-primary'
-                : 'h-0 opacity-0 bg-primary/50 group-hover:h-2/5 group-hover:opacity-100'"
-            ></div>
-
-            <div class="flex items-center justify-between gap-2 mb-1">
-              <div
-                class="text-sm truncate transition-colors"
-                :class="
-                  id === store.selectedId
-                    ? 'font-semibold text-foreground'
-                    : 'font-medium group-hover:text-primary'
-                "
-              >
-                {{ store.notesById[id]?.title || 'Untitled' }}
-              </div>
-              <div class="text-[10px] text-muted-foreground/70 shrink-0">
-                {{ formatDate(store.notesById[id]?.updated_at) }}
-              </div>
-            </div>
-            <div class="text-xs text-muted-foreground truncate">
-              {{ stripHtml(store.notesById[id]?.preview) || 'No content' }}
-            </div>
-          </button>
-
-          <div
-            v-if="store.orderedIds.length === 0"
-            class="px-3 py-6 text-xs text-muted-foreground/70 text-center"
-          >
-            No notes yet
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 分隔条：hover 显示折叠把手 -->
-    <div class="w-3 shrink-0 relative group/divider flex items-center justify-center">
-      <div class="absolute inset-y-0 left-1/2 w-px bg-border -translate-x-1/2" />
-      <button
-        @click="listVisible = !listVisible"
-        class="relative z-10 flex items-center justify-center w-4 h-7 rounded-full bg-background border border-border shadow-sm opacity-0 group-hover/divider:opacity-100 transition-opacity duration-200 hover:bg-muted cursor-pointer"
-      >
-        <PhCaretLeft v-if="listVisible" :size="10" />
-        <PhCaretRight v-else :size="10" />
-      </button>
-    </div>
-
-    <!-- 右侧区域 -->
+  <div class="flex h-full w-full">
+    <!-- 编辑区域（充满剩余空间） -->
     <div class="flex-1 flex min-w-0 @container overflow-hidden">
-      <!-- 编辑列（含 toolbar） -->
+      <!-- 主列（含 toolbar） -->
       <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <!-- Toolbar -->
         <div
@@ -95,15 +15,12 @@
 
           <!-- 状态指示器区 -->
           <div class="flex items-center gap-1.5 text-xs font-medium shrink-0 h-full">
-            <!-- 保存中 (蓝色转圈) -->
             <transition name="fade">
               <span v-if="store.saving === 'saving'" class="flex items-center gap-1.5 text-info">
                 <PhSpinner :size="14" class="animate-spin" />
                 Saving...
               </span>
             </transition>
-
-            <!-- 保存成功 (绿色对勾，加了 Tailwind 动画让他淡出) -->
             <transition name="fade">
               <span
                 v-if="store.saving === 'saved'"
@@ -113,8 +30,6 @@
                 Saved
               </span>
             </transition>
-
-            <!-- 保存失败 (红色警告) -->
             <transition name="fade">
               <span
                 v-if="store.saving === 'error'"
@@ -125,16 +40,10 @@
             </transition>
           </div>
 
-          <button
-            @click="confirmDelete"
-            class="flex items-center justify-center size-7 rounded-md text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/50 shrink-0 cursor-pointer active:scale-90"
-            aria-label="Delete note"
-          >
-            <PhTrash :size="20" />
-          </button>
+          <!-- (删除按钮已经移到侧边栏，这里保留一个 AI Toggle 面板按钮) -->
           <button
             @click="aiVisible = !aiVisible"
-            class="flex items-center justify-center size-7 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 shrink-0 cursor-pointer"
+            class="hidden md:flex items-center justify-center size-7 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 shrink-0 cursor-pointer"
             :class="
               aiVisible
                 ? 'text-primary bg-primary/10 hover:bg-primary/20'
@@ -146,12 +55,17 @@
           </button>
         </div>
 
-        <!-- 编辑区域 -->
-        <div class="flex-1 overflow-y-auto py-8 pl-8 pr-8 min-w-0 flex flex-col [scrollbar-gutter:stable]">
-          <div v-if="store.selectedId" class="flex-1">
+        <!-- 编辑容器主体 -->
+        <div
+          class="flex-1 overflow-y-auto py-8 lg:px-24 md:px-12 px-4 min-w-0 flex flex-col [scrollbar-gutter:stable]"
+        >
+          <div v-if="store.selectedId" class="flex-1 max-w-4xl mx-auto w-full">
             <div ref="editorRef" class="h-full animate-[editorIn_0.35s_ease_both]" />
           </div>
-          <div v-else class="flex flex-col items-center justify-center h-full text-center px-4 animate-[editorIn_0.4s_ease_both]">
+          <div
+            v-else
+            class="flex flex-col items-center justify-center h-full text-center px-4 animate-[editorIn_0.4s_ease_both]"
+          >
             <div
               class="flex items-center justify-center size-16 rounded-full bg-muted/50 text-foreground/20 mb-4 animate-[float_3s_ease-in-out_infinite]"
             >
@@ -172,61 +86,29 @@
         </div>
       </div>
 
-      <!-- AI 面板 -->
+      <!-- AI 面板 (侧边滑出) -->
       <div
-        class="shrink-0 overflow-hidden transition-[width] duration-300"
+        class="hidden md:block shrink-0 overflow-hidden transition-[width] duration-300"
         :class="aiVisible ? 'w-100' : 'w-0'"
       >
-        <div class="w-100 h-full border-l border-border"></div>
+        <div class="w-100 h-full border-l border-border bg-muted/10"></div>
       </div>
     </div>
-
-    <!-- 删除确认 modal -->
-    <AlertDialog v-model:open="showDeleteDialog">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete note?</AlertDialogTitle>
-          <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" @click="doDelete">Delete</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onBeforeUnmount, watch, nextTick, onMounted } from 'vue'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Crepe } from '@milkdown/crepe'
 import mediaApi from '@/api/media'
 import { uploadConfig, upload } from '@milkdown/kit/plugin/upload'
 import type { Node } from '@milkdown/kit/prose/model'
 import type { Ctx } from '@milkdown/kit/ctx'
 import { toast } from 'vue-sonner'
+import { useBreakpoints } from '@vueuse/core'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
-import {
-  PhPlus,
-  PhTrash,
-  PhCaretLeft,
-  PhCaretRight,
-  PhLayout,
-  PhNoteBlank,
-  PhSpinner,
-  PhCheckCircle,
-} from '@phosphor-icons/vue'
+import { PhPlus, PhLayout, PhNoteBlank, PhSpinner, PhCheckCircle } from '@phosphor-icons/vue'
 import { useNoteStore } from '@/stores/notes'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -234,8 +116,22 @@ const route = useRoute()
 const router = useRouter()
 
 const store = useNoteStore()
-const listVisible = ref(true)
-const aiVisible = ref(false)
+// 定义断点（和全局保持一致，lg: 1024px）
+const breakpoints = useBreakpoints({
+  sm: 640,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+  '2xl': 1536,
+})
+
+// 判断当前是否大于等于 lg (1024px)
+const isLargeScreen = breakpoints.greaterOrEqual('lg')
+// 初始状态：如果是大屏，默认展开 (true)；如果是小屏，默认收起 (false)
+const aiVisible = ref(isLargeScreen.value)
+watch(isLargeScreen, (isLarge) => {
+  aiVisible.value = isLarge
+})
 
 const editorRef = ref<HTMLElement>()
 const showDeleteDialog = ref(false)
@@ -639,12 +535,16 @@ onBeforeUnmount(() => {
   max-height: 2000px;
   opacity: 1;
   overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.2s ease;
 }
 .milkdown .milkdown-code-block[data-collapsed='1'] .codemirror-host {
   max-height: 0 !important;
   opacity: 0 !important;
-  transition: max-height 0.25s ease, opacity 0.15s ease;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.15s ease;
 }
 
 /* ── Blockquote 左侧竖条颜色 ── */
@@ -847,15 +747,28 @@ onBeforeUnmount(() => {
 
 /* ── 空状态图标呼吸浮动 ── */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 /* ── Saved checkmark 弹跳 ── */
 @keyframes popIn {
-  0% { transform: scale(0.5); opacity: 0; }
-  60% { transform: scale(1.15); opacity: 1; }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ── 编辑器切换淡入上浮 ── */

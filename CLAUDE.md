@@ -24,7 +24,7 @@
 
 ### 折叠/展开状态
 
-- 展开宽度：`w-64`（256px）；折叠宽度：`w-14`（56px）
+- 展开宽度：`w-72`（288px）；折叠宽度：`w-14`（56px）
 - 过渡：`transition-[width] duration-300ms`
 - 状态变体：`group-data-[collapsed]/sidebar:`（Tailwind v4 原生 data attribute variant）
 

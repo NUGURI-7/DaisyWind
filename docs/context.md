@@ -31,7 +31,7 @@
 - 主应用布局采用可折叠 sidebar（Flexbox + data-[collapsed] 驱动）。
 - sidebar 包含 Chat、Notes 和 Settings（Theme Switcher Popover）入口。
 - sidebar 底部用户菜单已通过 `Teleport` 脱离 overflow 裁剪上下文。
-- Notes 模块（P1 已完成，后续增强暂缓——当前阶段聚焦 AI 核心能力）：`api/note.ts` + `stores/notes.ts`（Pinia，autosave debounce + race condition 保护）+ `views/notes/index.vue`（接入 API，可折叠列表面板，AI 面板 toolbar 切换，删除确认）。Milkdown Crepe editor 含代码块折叠/复制反馈、block hover 背景高亮。
+- Notes 模块（P1 已完成，后续增强暂缓——当前阶段聚焦 AI 核心能力）：`api/note.ts` + `stores/notes.ts`（Pinia，autosave debounce + race condition 保护）+ `views/notes/index.vue`（纯编辑区，列表已迁出）。**Notes 列表挪到 Sidebar**（`components/notes/NoteList.vue`，通过 Sidebar 的 Chat/Notes 模式切换翻页显示），`views/notes/index.vue` 仅保留编辑器 + toolbar（保存状态 / AI 面板切换 / 删除确认）。Milkdown Crepe editor 含代码块折叠/复制反馈、block hover 背景高亮。
 - 全局 `btn-ghost` hover 色通过 `--color-btn-ghost-hover` CSS 变量覆盖；sidebar 折叠状态持久化至 `localStorage`。
 - Backend Notes CRUD 接口已完成（列表、新建、详情、更新、软删除），路由注册在 `/api/nuguri/note/notes`；title 和 preview 由后端从 content 自动提取。
 - Backend 已有用户注册、登录、获取 current user 的接口。
@@ -83,6 +83,15 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-04-22（Markdown 渲染接入 + 布局调整）
+- **Chat Markdown 渲染**：新增 `components/chat/components/MarkdownRender.vue`，接入 `markdown-it` + `dompurify`（XSS 防护）+ `highlight.js`（代码高亮）+ `shiki` + `morphdom`（流式增量 DOM diff）+ `@tailwindcss/typography`。`TextBlock` 和 User 消息气泡均改用 `MarkdownRender`，流式阶段通过 `is-streaming` 触发防抖和软闭合，避免未闭合 markdown 块导致的渲染抖动。
+- **样式覆盖**：`app.css` 新增 `.prose` / `.code-block-wrapper` / `.hljs` 覆盖规则，解决 Tailwind Typography 与代码块容器的样式冲突（背景、内外边距、horizontal scroll）。
+- **Notes 列表迁移至 Sidebar**：新增 `components/notes/NoteList.vue`，Sidebar 根据 `is-notes-mode` 翻页显示 Chat/Notes 列表。`views/notes/index.vue` 删除左侧列表面板和分隔条折叠逻辑，仅保留编辑区 + toolbar。
+- **移动端 Sidebar toggle 位置调整**：从 `AppLayout` 顶部栏挪到 `MainContent` 的 header（小屏按钮靠左、标题绝对居中；大屏标题左对齐）。
+- **Sidebar 宽度**：`w-64` → `w-72`（288px）。CLAUDE.md 设计规范同步更新。
+- **Chat 空状态**：无消息时 logo (`/mark-rotating.svg`) + 欢迎语 + input 偏上居中（flex 上下占位 3:7），发送首条消息后 input 瞬间回到底部，MessageInput 始终挂载避免 IME 丢失。
+- **MessageInput**：去掉 `:disabled="chat.isLoading"`，允许流式输出期间继续输入。
+
 ### 2026-04-19（Chat 模块架构反思与重构阶段 B&E 完成）
 - **架构反思沉淀**：与 AI 深度探讨了流式渲染、Tool Call 协议的复杂性，明确了"信息进协议，呈现留前端"、"Rule of Three 原则"等架构思想，产出 `docs/chat-architecture-reflection.md`。
 - **命名对齐 (Phase B)**：消除了前后端 SSE 协议和前端类型接口中多余的 `tool_` 前缀，将字段统一为 `id`、`name` 等纯净命名，消灭了手写映射导致的 Bug 隐患。
