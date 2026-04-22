@@ -32,7 +32,7 @@ defineOptions({ name: 'ChatPanel' })
 const route = useRoute()
 const chat = useChatStore()
 
-const isEmpty = computed(() => chat.messages.length === 0)
+const isEmpty = computed(() => !chat.isLoadingConversation && chat.messages.length === 0)
 
 // ... 保留原有 watch
 watch(

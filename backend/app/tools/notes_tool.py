@@ -40,9 +40,8 @@ async  def search_notes(ctx: RunContext[AgentDeps], query: str) -> list[dict]:
 
     return [
         {
-            "uuid": str(n.uuid),
             "title": n.title,
-            "preview": n.preview,
+            "content": n.content,
         }
         for n in notes
     ]

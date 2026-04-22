@@ -91,6 +91,10 @@
 - **Sidebar 宽度**：`w-64` → `w-72`（288px）。CLAUDE.md 设计规范同步更新。
 - **Chat 空状态**：无消息时 logo (`/mark-rotating.svg`) + 欢迎语 + input 偏上居中（flex 上下占位 3:7），发送首条消息后 input 瞬间回到底部，MessageInput 始终挂载避免 IME 丢失。
 - **MessageInput**：去掉 `:disabled="chat.isLoading"`，允许流式输出期间继续输入。
+- **MessageInput 两行布局 + 模型切换**：改为 Claude 风格两行结构（textarea 在上、工具条在下），最大宽度 `max-w-3xl` → `max-w-4xl`；右下角新增模型选择器（shadcn-vue Popover），支持 `deepseek-chat` / `gemini-3.1-pro-preview` / `gemini-3-flash-preview`，选择持久化至 `localStorage`。
+- **ChatPanel 空状态防闪烁**：`isEmpty` 加 `!chat.isLoadingConversation` 守卫，刷新会话页不再闪过居中空状态。
+- **Clipboard 兼容 HTTP**：`MarkdownRender.vue` 代码块复制按钮增加 `document.execCommand('copy')` fallback，兼容 HTTP 部署环境（`navigator.clipboard` 仅在安全上下文可用）。
+- **search_notes tool 返回字段调整**：`uuid` + `preview` → `title` + `content`，让 Agent 拿到完整笔记正文而不是截断预览。
 
 ### 2026-04-19（Chat 模块架构反思与重构阶段 B&E 完成）
 - **架构反思沉淀**：与 AI 深度探讨了流式渲染、Tool Call 协议的复杂性，明确了"信息进协议，呈现留前端"、"Rule of Three 原则"等架构思想，产出 `docs/chat-architecture-reflection.md`。
