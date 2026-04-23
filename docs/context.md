@@ -83,6 +83,9 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-04-22（Conversation Ingestion 架构设计文档）
+- 新增 `docs/ingestion-architecture.md`：多 Agent 编排（非 Pipeline）方案，覆盖 Source 适配层、Orchestrator + Worker registry、Blackboard 状态共享、SSE 事件协议、分阶段落地路径。定位为 Phase 1 P2（RAG 知识库）的语料沉淀入口，架构 day-1 完全体、功能逐步 enable。
+
 ### 2026-04-22（Markdown 渲染接入 + 布局调整）
 - **Chat Markdown 渲染**：新增 `components/chat/components/MarkdownRender.vue`，接入 `markdown-it` + `dompurify`（XSS 防护）+ `highlight.js`（代码高亮）+ `shiki` + `morphdom`（流式增量 DOM diff）+ `@tailwindcss/typography`。`TextBlock` 和 User 消息气泡均改用 `MarkdownRender`，流式阶段通过 `is-streaming` 触发防抖和软闭合，避免未闭合 markdown 块导致的渲染抖动。
 - **样式覆盖**：`app.css` 新增 `.prose` / `.code-block-wrapper` / `.hljs` 覆盖规则，解决 Tailwind Typography 与代码块容器的样式冲突（背景、内外边距、horizontal scroll）。
