@@ -9,13 +9,20 @@
     @keydown="handleKeydown"
   >
     <div ref="innerContainer" class="max-w-3xl mx-auto space-y-6">
-      <div v-for="msg in chat.messages" :key="msg.uuid">
+      <div v-for="(msg, index) in chat.messages" :key="msg.uuid" class="group/msg">
         <!-- User 消息 -->
-        <div v-if="msg.role === 'user'" class="flex justify-end">
+        <div v-if="msg.role === 'user'" class="flex flex-col items-end gap-1">
           <div class="max-w-[80%] rounded-2xl bg-muted text-foreground px-4 py-2.5">
-            <!-- 替换为 MarkdownRender，并且传入 is-user="true" 触发用户模式逻辑 -->
             <MarkdownRender :content="msg.content" :is-user="true" />
           </div>
+          <MessageActions
+            :content="getMessageMarkdown(msg)"
+            role="user"
+            :class="[
+              'mt-1 transition-opacity duration-150',
+              isLastMessage(index) ? 'opacity-100' : 'opacity-0 group-hover/msg:opacity-100',
+            ]"
+          />
         </div>
 
         <!-- Assistant 消息 -->
@@ -25,8 +32,6 @@
             <ToolUseBlock v-else-if="block.type === 'tool_use'" :block="block" />
           </template>
 
-          <!-- 将 Spinner 挂载在 Message 级别 -->
-          <!-- 显示条件：正在流式输出，或者是当前对话的最新一条助理回复 -->
           <ThreeSpinner
             v-if="msg.status === 'streaming' || msg.uuid === chat.lastAssistantUuid"
             :size="36"
@@ -37,6 +42,17 @@
           <p v-if="msg.status === 'error'" class="text-destructive text-sm">
             {{ msg.errorMessage }}
           </p>
+
+          <!-- 流式期间不显示，避免复制到半截 -->
+          <MessageActions
+            v-if="msg.status !== 'streaming'"
+            :content="getMessageMarkdown(msg)"
+            role="assistant"
+            :class="[
+              'mt-1 transition-opacity duration-150',
+              isLastMessage(index) ? 'opacity-100' : 'opacity-0 group-hover/msg:opacity-100',
+            ]"
+          />
         </div>
       </div>
       <div ref="scrollAnchor" class="h-10 w-full shrink-0"></div>
@@ -76,8 +92,23 @@ import ToolUseBlock from './blocks/ToolUseBlock.vue'
 import type { ChatMessage, RenderBlock } from '@/types/chat'
 import ThreeSpinner from '@/components/common/ThreeSpinner.vue'
 import MarkdownRender from './MarkdownRender.vue'
+import MessageActions from './MessageActions.vue'
+import { getMessageMarkdown } from '@/utils/messageContent'
 
 const chat = useChatStore()
+
+// 判断当前消息是否应该被视为"列表中最新的可见消息"
+// 特殊情况：如果最后一条是流式中的 AI 消息，那它隐藏着 action bar，
+// 此时倒数第二条（user）才是视觉上的"最后一条"
+function isLastMessage(index: number): boolean {
+  const total = chat.messages.length
+  const last = chat.messages[total - 1]
+
+  if (last && last.role === 'assistant' && last.status === 'streaming') {
+    return index === total - 2
+  }
+  return index === total - 1
+}
 
 // ==========================================
 // 智能滚动逻辑

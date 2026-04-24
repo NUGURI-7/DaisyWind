@@ -7,6 +7,7 @@
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import morphdom from 'morphdom'
 import { renderMarkdown } from '@/utils/markdown'
+import { renderAllMermaid } from '@/utils/mermaid'
 
 async function copyToClipboard(text: string): Promise<void> {
   if (navigator.clipboard && window.isSecureContext) {
@@ -53,16 +54,12 @@ const flush = () => {
   rafId = null
   if (!root.value) return
 
-  // 临时容器承载新 HTML，交给 morphdom 做 DOM diff
   const tmp = document.createElement('div')
   tmp.innerHTML = pendingHtml
 
   morphdom(root.value, tmp, {
-    // 只 diff 内部子节点，外层 root 本身的属性/类名由 Vue 管理
     childrenOnly: true,
-
     onBeforeElUpdated(fromEl, toEl) {
-      // 1. 复制按钮正在显示 "Copied!" 反馈时，禁止被流式渲染冲掉
       if (
         fromEl instanceof HTMLElement &&
         fromEl.classList.contains('copy-btn') &&
@@ -71,12 +68,27 @@ const flush = () => {
         return false
       }
 
-      // 2. 节点完全相等就跳过，减少无谓 diff
-      if (fromEl.isEqualNode(toEl)) return false
+      // Mermaid 容器：如果已渲染，就跳过 diff（保留 SVG）
+      if (
+        fromEl instanceof HTMLElement &&
+        fromEl.classList.contains('mermaid-container') &&
+        fromEl.dataset.mermaidRendered === '1'
+      ) {
+        // 但如果源码变了，就允许 diff 覆盖，重新走渲染流程
+        const newSource = (toEl as HTMLElement).dataset.mermaidSource
+        const oldSource = fromEl.dataset.mermaidSource
+        if (newSource === oldSource) return false
+      }
 
+      if (fromEl.isEqualNode(toEl)) return false
       return true
     },
   })
+
+  // 流式期间不渲染 Mermaid（保持 loading），流式结束后统一渲染
+  if (!props.isStreaming && root.value) {
+    void renderAllMermaid(root.value)
+  }
 }
 
 const schedule = () => {
@@ -103,8 +115,10 @@ watch(() => props.isStreaming, update)
 
 onMounted(() => {
   pendingHtml = renderMarkdown(props.content, props.isStreaming, props.isUser)
-  // 首次直接塞入，无需 diff
   if (root.value) root.value.innerHTML = pendingHtml
+  if (!props.isStreaming && root.value) {
+    void renderAllMermaid(root.value)
+  }
 })
 
 onUnmounted(() => {

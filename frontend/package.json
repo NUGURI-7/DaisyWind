@@ -28,6 +28,7 @@
     "ldrs": "^1.1.9",
     "lucide-vue-next": "^0.577.0",
     "markdown-it": "^14.1.1",
+    "mermaid": "^11.14.0",
     "morphdom": "^2.7.8",
     "nprogress": "^0.2.0",
     "pinia": "^3.0.4",

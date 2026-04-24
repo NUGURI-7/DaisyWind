@@ -3,6 +3,15 @@ import MarkdownIt, { type Options } from 'markdown-it'
 import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 
+function toBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]!)
+  }
+  return btoa(binary)
+}
+
 // ==========================================
 // 代码语言 alias 归一化
 // ==========================================
@@ -124,6 +133,14 @@ md.renderer.rules.fence = function (tokens, idx) {
   const rawLang = info.split(/\s+/g)[0] || ''
   const lang = normalizeLang(rawLang) // ← 归一化
   const rawCode = token.content.replace(/\n+$/, '')
+
+  // ===== Mermaid 特殊分支：不走 hljs，产出占位节点 =====
+  if (rawLang.toLowerCase() === 'mermaid') {
+    // 用 base64 编码绕开 DOMPurify 对多行属性值的剥除
+    const encodedSource = toBase64(rawCode)
+    return `<div class="mermaid-container my-4 flex items-center justify-center min-h-[120px] overflow-x-auto rounded-lg border border-border bg-background p-4" data-mermaid-source="${encodedSource}" data-mermaid-rendered="0"><div class="mermaid-loading flex items-center gap-2 text-sm text-brand"><l-helix size="16" stroke="2" speed="2" color="currentColor"></l-helix><span>正在渲染图表...</span></div></div>`
+  }
+
   // ...
   let highlighted = ''
   if (lang) {
@@ -175,7 +192,12 @@ export function renderMarkdown(content: string, isStreaming = false, isUser = fa
   const rawHtml = md.render(processedContent)
 
   const safeHtml = DOMPurify.sanitize(rawHtml, {
-    ADD_ATTR: ['target', 'data-code'],
+    ADD_ATTR: ['target', 'data-code', 'data-mermaid-source', 'data-mermaid-rendered'],
+    CUSTOM_ELEMENT_HANDLING: {
+      tagNameCheck: /^l-[a-z-]+$/, // 允许所有 l-* 自定义标签（l-ring / l-ping / l-tailspin 等）
+      attributeNameCheck: /^(size|stroke|speed|color|bg-opacity)$/, // 允许 ldrs 的属性
+      allowCustomizedBuiltInElements: false,
+    },
   })
 
   return safeHtml
