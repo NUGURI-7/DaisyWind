@@ -26,6 +26,32 @@
   font-size: inherit !important;
 }
 
+/* 所有标题上下间距缩小 20% */
+.prose h1 {
+  margin-top: 0;
+  margin-bottom: 0.711em;
+} /* 0.889 * 0.8 */
+.prose h2 {
+  margin-top: 1.6em;
+  margin-bottom: 0.8em;
+} /* 2 * 0.8, 1 * 0.8 */
+.prose h3 {
+  margin-top: 1.28em;
+  margin-bottom: 0.48em;
+} /* 1.6 * 0.8, 0.6 * 0.8 */
+.prose h4 {
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+} /* 1.5 * 0.8, 0.5 * 0.8 */
+.prose h5 {
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+.prose h6 {
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+
 /* 去掉 markdown-it 默认给 code 添加的反引号 (`) 伪元素 */
 .prose code::before,
 .prose code::after {
@@ -140,7 +166,7 @@
   --accent: oklch(0.97 0.001 106.424);
   --accent-foreground: oklch(0.216 0.006 56.043);
 
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.62 0.16 27);
 
   --border: oklch(0.923 0.003 48.717);
   --input: oklch(0.923 0.003 48.717);
@@ -216,7 +242,7 @@
   --accent: oklch(0.268 0.007 34.298);
   --accent-foreground: oklch(0.985 0.001 106.423);
 
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: oklch(0.55 0.14 27);
 
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -270,7 +296,7 @@
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.62 0.16 27);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -298,7 +324,7 @@
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.371 0 0);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: oklch(0.55 0.14 27);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
@@ -328,7 +354,7 @@
   --muted-foreground: oklch(0.552 0.016 285.938);
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.62 0.16 27);
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.705 0.015 286.067);
@@ -356,7 +382,7 @@
   --muted-foreground: oklch(0.705 0.015 286.067);
   --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: oklch(0.55 0.14 27);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.552 0.016 285.938);
@@ -386,7 +412,7 @@
   --muted-foreground: oklch(0.551 0.027 264.364);
   --accent: oklch(0.967 0.003 264.542);
   --accent-foreground: oklch(0.21 0.034 264.665);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.62 0.16 27);
   --border: oklch(0.928 0.006 264.531);
   --input: oklch(0.928 0.006 264.531);
   --ring: oklch(0.707 0.022 261.325);
@@ -414,7 +440,7 @@
   --muted-foreground: oklch(0.707 0.022 261.325);
   --accent: oklch(0.278 0.033 256.848);
   --accent-foreground: oklch(0.985 0.002 247.839);
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: oklch(0.55 0.14 27);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.551 0.027 264.364);
@@ -444,7 +470,7 @@
   --muted-foreground: oklch(0.554 0.046 257.417);
   --accent: oklch(0.968 0.007 247.896);
   --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.62 0.16 27);
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
   --ring: oklch(0.704 0.04 256.788);
@@ -472,7 +498,7 @@
   --muted-foreground: oklch(0.704 0.04 256.788);
   --accent: oklch(0.279 0.041 260.031);
   --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
+  --destructive: oklch(0.55 0.14 27);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.551 0.027 264.364);
