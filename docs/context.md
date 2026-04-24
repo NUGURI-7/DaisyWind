@@ -68,7 +68,8 @@
 - Settings 入口已接入 ThemeSwitcher（Popover 弹出，含 12 主题色 + Light/Dark 切换）。
 
 ## 下一步
-- **当前重点**：进入 Chat P2 — RAG 知识库检索（pgvector + Embedding）。详见 `docs/roadmap.md`。
+- **当前重点**：Conversation Ingestion 模块（多 Agent 编排）—— 把对话整理成结构化 Note，同时为 P2 RAG 准备语料。详见 `docs/ingestion-architecture.md`。
+- **后续**：Chat P2 — RAG 知识库检索（pgvector + Embedding）。详见 `docs/roadmap.md`。
 - **流式渲染规范**：SSE 事件协议、前端块级状态机、组件映射。详见 `docs/streaming-render.md`。
 
 ## 开发注意事项
@@ -83,8 +84,15 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
-### 2026-04-22（Conversation Ingestion 架构设计文档）
-- 新增 `docs/ingestion-architecture.md`：多 Agent 编排（非 Pipeline）方案，覆盖 Source 适配层、Orchestrator + Worker registry、Blackboard 状态共享、SSE 事件协议、分阶段落地路径。定位为 Phase 1 P2（RAG 知识库）的语料沉淀入口，架构 day-1 完全体、功能逐步 enable。
+### 2026-04-23（Conversation Ingestion 架构定稿：Graph + Agent-in-Node + 自研图引擎 + Vue Flow）
+- **范式定稿**：放弃 Pipeline 与 Pure Agent Loop，采用 Graph + Agent-in-Node 混合架构。外层图驱动调度，内层节点可包装 PydanticAI Agent。
+- **框架选型**：自研图引擎（~400 LOC 核心 + ~150 LOC 持久化），不用 LangGraph、不用 pydantic-graph。理由：需求集小、数据结构自控、未来做拖拽编辑器更顺。
+- **图作为数据**：`GraphTemplate` 表存模板，`IngestionRun.graph_snapshot` 启动时拍快照，模板被改不影响已跑 run（类比 GitHub Actions workflow run）。
+- **回环处理**：Critic → Writer 用图层面 back-edge + `max_iterations: 3`，前端可视化反思过程。
+- **前端选型**：Vue Flow 只读模式（dagre 自动布局 + 节点状态实时高亮 + await_user 交互），未来开拖拽编辑零迁移。
+- **图 CRUD 写接口首版不暴露**，未来直接新增 endpoint。`GET /node-types` 接口必须存在（暴露节点类型 + 参数 JSONSchema）。
+- **节点集（首版）**：Source / Classifier / Outliner / HumanReview / Writer / Critic / Sink；全部默认 deepseek-chat，前端可覆盖 model。
+- **新增决议条目**：见 `docs/ingestion-architecture.md` §十 共 13 条已决议。
 
 ### 2026-04-22（Markdown 渲染接入 + 布局调整）
 - **Chat Markdown 渲染**：新增 `components/chat/components/MarkdownRender.vue`，接入 `markdown-it` + `dompurify`（XSS 防护）+ `highlight.js`（代码高亮）+ `shiki` + `morphdom`（流式增量 DOM diff）+ `@tailwindcss/typography`。`TextBlock` 和 User 消息气泡均改用 `MarkdownRender`，流式阶段通过 `is-streaming` 触发防抖和软闭合，避免未闭合 markdown 块导致的渲染抖动。
