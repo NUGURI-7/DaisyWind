@@ -54,6 +54,25 @@
         </li>
       </ul>
     </div>
+    <AlertDialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete note</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete this note?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            @click="executeDelete"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>
 
@@ -61,9 +80,23 @@
 import { useNoteStore } from '@/stores/notes'
 import { useRouter } from 'vue-router'
 import { PhPlus, PhTrash } from '@phosphor-icons/vue'
+import { ref } from 'vue'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 const store = useNoteStore()
 const router = useRouter()
+
+const showDeleteDialog = ref(false)
+const idToDelete = ref<string | null>(null)
 
 // 短日期格式化：今天显示 HH:mm，之前显示 MM-DD
 const formatDateShort = (iso?: string) => {
@@ -94,15 +127,24 @@ const createNote = async () => {
   }
 }
 
-// 这里的删除我们借用一下浏览器原生的 confirm，或者你可以按原样在外部处理
-// 为了简化侧边栏，这里用最简单的 confirm
-const confirmDelete = async (id: string) => {
-  if (confirm('确定要删除这条笔记吗？此操作无法撤销。')) {
-    await store.remove(id)
-    if (store.selectedId === id) {
-      store.selectedId = null
-      router.push({ query: {} })
-    }
+const confirmDelete = (id: string) => {
+  idToDelete.value = id
+  showDeleteDialog.value = true
+}
+
+const executeDelete = async () => {
+  if (!idToDelete.value) return
+
+  const id = idToDelete.value
+  await store.remove(id)
+
+  if (store.selectedId === id) {
+    store.selectedId = null
+    router.push({ query: {} })
   }
+
+  // 清理状态
+  showDeleteDialog.value = false
+  idToDelete.value = null
 }
 </script>

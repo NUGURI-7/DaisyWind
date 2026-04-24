@@ -40,19 +40,54 @@
         </li>
       </ul>
     </div>
+    <AlertDialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete chat</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete this chat?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
+          <!-- 使用 destructive 颜色来匹配红色的删除按钮 -->
+          <AlertDialogAction
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            @click="executeDelete"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { PhTrash } from '@phosphor-icons/vue'
 import { useChatStore } from '@/stores/chat'
 import type { ConversationSummary } from '@/api/chat'
 
+// --- 添加 AlertDialog 相关的导入 ---
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+
 defineOptions({ name: 'ConversationList' })
 
 const chat = useChatStore()
 const router = useRouter()
+
+const showDeleteDialog = ref(false)
+const itemToDelete = ref<ConversationSummary | null>(null)
 
 onMounted(() => {
   chat.loadConversations()
@@ -62,14 +97,24 @@ function handleSelect(uuid: string) {
   router.push(`/chat/${uuid}`)
 }
 
-async function handleDelete(conv: ConversationSummary) {
-  if (!window.confirm(`确定删除对话「${conv.title || '未命名'}」？`)) return
+function handleDelete(conv: ConversationSummary) {
+  itemToDelete.value = conv
+  showDeleteDialog.value = true
+}
 
+async function executeDelete() {
+  if (!itemToDelete.value) return
+
+  const conv = itemToDelete.value
   const wasCurrent = chat.currentConversationUuid === conv.uuid
   await chat.removeConversation(conv.uuid)
 
   if (wasCurrent) {
     router.push('/chat')
   }
+
+  // 清理状态
+  showDeleteDialog.value = false
+  itemToDelete.value = null
 }
 </script>
