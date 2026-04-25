@@ -14,6 +14,7 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
 import { PhCopy, PhCheck } from '@phosphor-icons/vue'
+import { copyToClipboard } from '@/utils/clipboard'
 
 const props = defineProps<{
   content: string
@@ -32,7 +33,7 @@ const handleCopy = async () => {
   }
 
   try {
-    await navigator.clipboard.writeText(props.content)
+    await copyToClipboard(props.content)
     copied.value = true
     timer = setTimeout(() => {
       copied.value = false

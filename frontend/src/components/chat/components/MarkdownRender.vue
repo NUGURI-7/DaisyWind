@@ -8,26 +8,7 @@ import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import morphdom from 'morphdom'
 import { renderMarkdown } from '@/utils/markdown'
 import { renderAllMermaid } from '@/utils/mermaid'
-
-async function copyToClipboard(text: string): Promise<void> {
-  if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(text)
-    return
-  }
-  const textarea = document.createElement('textarea')
-  textarea.value = text
-  textarea.style.position = 'fixed'
-  textarea.style.opacity = '0'
-  textarea.style.left = '-9999px'
-  document.body.appendChild(textarea)
-  textarea.select()
-  try {
-    const ok = document.execCommand('copy')
-    if (!ok) throw new Error('execCommand copy failed')
-  } finally {
-    document.body.removeChild(textarea)
-  }
-}
+import { copyToClipboard } from '@/utils/clipboard'
 
 const props = defineProps<{
   content: string
