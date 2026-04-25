@@ -84,7 +84,7 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
-### 2026-04-25（Nano Banana 图像生成接入 + 消息复制图片支持）
+### 2026-04-25（Nano Banana 图像生成接入 + 消息复制图片支持 + Clipboard 工具抽取）
 - **Nano Banana 接入**：对接 Gemini 图像生成模型 `gemini-3.1-flash-image-preview` / `gemini-3-pro-image-preview`，支持在对话流中直接生成图片。完整方案见 `docs/nano-banana-integration.md`。
 - **PydanticAI 适配**：图像模型必须显式 `output_type=[str, BinaryImage]`，否则 Agent 默认 `str` 输出会触发 RetryPrompt 把图片丢弃；图像模型还不支持 tools，需按 `provider=="gemini" and "image" in model_name` 分流（system_prompt / output_type / tool 注册三处）。
 - **R2 后端直传**：`R2Storage.upload_bytes()` 新方法配合 `asyncio.to_thread`，stream.py 收到 `FilePart(BinaryImage)` 后上传到 `chat/gemini_generated/{user_id}/{uuid}.{ext}`（按 `media_type` 自动识别 jpg/png/webp）。
@@ -93,6 +93,7 @@
 - **兜底逻辑**：图像模型偶尔只回文字（拒绝/澄清），通过 `pending_image_id` + `has_text` 判断把幽灵 loading 占位移除（`status: removed`）；完全无输出时标 error。
 - **计费扩展**：`pricing.py` 加 `image_count` 参数和 `image_output_per_unit` 字段，按张计费（Pro $0.134 / Flash $0.067）。
 - **消息复制图片**：`messageContent.ts` 的 `assistantBlocksToMarkdown` 加 image 分支，输出 `![generated image](url)` Markdown 语法，纯图片消息也能正常复制。
+- **Clipboard 工具抽取**：把 MarkdownRender 内联的 `copyToClipboard` 抽到 `utils/clipboard.ts`，MessageActions 改为统一调用，修复非安全上下文（HTTP）下消息复制失败的问题。
 
 ### 2026-04-23（Conversation Ingestion 架构定稿：Graph + Agent-in-Node + 自研图引擎 + Vue Flow）
 - **范式定稿**：放弃 Pipeline 与 Pure Agent Loop，采用 Graph + Agent-in-Node 混合架构。外层图驱动调度，内层节点可包装 PydanticAI Agent。
@@ -137,45 +138,16 @@
 - 修复多处：输入框未贴底的 flex 高度链问题（`min-h-0` + `shrink-0`）、`get_conversation_or_404` 漏 `return`、`ConversationOut` 缺 `ConfigDict(from_attributes=True)`。
 - P0 范围决议（不做空状态 Landing Page / 不做流式取消 / 不做 Starred 分组 / 不做"⋯"菜单 / 不做模型选择器）全部兑现，这些条目已归入 `roadmap.md` 的 Phase 2 体验增强。
 
-### 2026-03-17（UI 细节优化、API 调整与前端图片直传接入）
-- 前端图片上传接入：修复了 `api/media.ts` 中 `getPresignedUrl` 的参数拼写错误，并在 Notes 的 Milkdown (Crepe) 编辑器中全面接入图片直传 OSS (R2) 逻辑（覆盖 ImageBlock、拖拽及粘贴上传），上传成功后自动替换为公共访问链接。
-- Sidebar 动画重构：改用 Tailwind 原生的 `max-w-[200px]`、`opacity-0` 和 `transition-all` 组合，实现更平滑的文本和图标展开/折叠动画。
-- Milkdown 代码块 UI 深度定制：在 `app.css` 中注入了一套抗锯齿和覆盖默认边框、背景、行号的样式，使代码块呈现更纯净的 Claude 风格（无色差浅灰/深灰背景，优化顶部工具栏和语言选择器）；同时优化了 CodeMirror 语法高亮样式排版。
-- Editor 键盘交互增强：在 Notes 编辑器中增加了语言选择器的键盘导航（`ArrowUp`、`ArrowDown`、`Enter`）支持。
-- API 规范化：将后端的 `/current_user` 路由和前端调用统一修改为 `/current-user`；移除了后端未使用的 `play.router`。
-
-### 2026-03-14（R2 对象存储前端直传方案：后端完成）
-- 引入了 `boto3` SDK，对接 Cloudflare R2（S3 兼容）对象存储。
-- 放弃了本地存图和 Cookie 鉴权的方案，改为更高级的“前端直传 (Presigned URL)”模式。
-- 新增 `R2Storage` 工具类和 `POST /api/nuguri/v1/media/presigned-url` 接口，后端不再落盘文件，仅颁发具有 5 分钟有效期的 PUT 签名。
-- 增强了文件上传的安全校验，拒绝无后缀名文件，统一使用 UUID 生成文件名。
-- 解决了 Cookie CSRF 和静态资源跨域访问鉴权的问题。
-
-### 2026-03-13（主题系统：12 主题色 + Light/Dark 切换）
-- 新增 `composables/useTheme.ts`：管理主题状态（theme name + dark mode），localStorage 持久化。
-- 新增 `components/ThemeSwitcher.vue`：色块网格 + Light/Dark 切换面板。
-- `app.css` 新增 11 套主题变量（Neutral/Zinc/Gray/Slate + Rose/Red/Orange/Green/Blue/Yellow/Violet），每套含 light + dark。
-- Sidebar Settings 按钮接入 shadcn-vue Popover，弹出 ThemeSwitcher。
-
-### 2026-03-12（全量迁移至 shadcn-vue 体系完成）
-- 彻底卸载 daisyUI，使用 shadcn-vue（Reka UI v2）和原生 Tailwind v4 接管全局样式。
-- 确立了 11 套暖色调 CSS 变量系统（`docs/design-tokens.md`）。
-- Login、Register、Notes、Chat 和 Sidebar (Flexbox + data-[collapsed] 原生重构) 已全量重构完成。
-
-### 2026-03-10（Notes UI 深度打磨与 Bug 修复）
-- 移除了全局的 `btn-ghost` 依赖，改用纯 Tailwind v4 工具类构建精致 hover。
-- 优化了 Notes 列表交互（左侧高亮指示线，Hover 微移，时间重排）。
-- 引入 URL 驱动状态，通过 `vue-router` 将 `selectedId` 绑定至 URL query，解决刷新和路由切换时的状态丢失问题。
-- 重绘了无笔记选中时的右侧引导空状态（Empty State）组件。
-
-### 2026-04-25（Bug 修复）
-- 修复了在非安全上下文（如非 localhost 的 HTTP 环境）下因 `navigator.clipboard` 为 undefined 导致的文本复制失败报错问题。提取了通用的 `copyToClipboard` 工具函数，并对 `MessageActions.vue` 和 `MarkdownRender.vue` 进行了统一改造。
-
 ## 历史摘要
 - 早期 backend 基础已经具备 FastAPI app 启动、Redis/PostgreSQL 生命周期接入、Tortoise ORM 模型和 auth 相关服务。
 - frontend 基础已经具备 login/register 流程、主布局、可折叠 sidebar 以及 notes editor 页面。
 - Notes 后端 CRUD 接口（列表、新建、详情、更新、软删除）已就绪，并在第一阶段实现了带防抖自动保存的前端交互。
 - 登录流程同步收集 `last_login` 和 `login_count`，为数据分析打下基础。
+- 2026-03-10：Notes UI 深度打磨（hover 态、URL 驱动 selectedId、空状态引导）。
+- 2026-03-12：全量迁移到 shadcn-vue（Reka UI v2）+ Tailwind v4，daisyUI 完全卸载。
+- 2026-03-13：主题系统落地，11 套暖色 CSS 变量 + Light/Dark 切换 + Sidebar Settings 入口。
+- 2026-03-14：Cloudflare R2（S3 兼容）对象存储后端接入，前端直传 Presigned URL 方案。
+- 2026-03-17：Notes 前端图片直传接入（Crepe 编辑器 / 拖拽 / 粘贴），Sidebar 动画重构，API 路径统一为 `current-user`。
 
 ## 后续使用方式
 - 每次开启新的 AI 对话时，先读取这个文件。
