@@ -26,7 +26,8 @@ class R2Storage:
         )
         self.bucket = settings.R2_BUCKET_NAME
 
-    def generate_pre_signed_upload_url(self, object_name: str, content_type: str = "application/octet-stream",expiration: int = 300) -> dict:
+    def generate_pre_signed_upload_url(self, object_name: str, content_type: str = "application/octet-stream",
+                                       expiration: int = 300) -> dict:
         """
         生成预签名上传 URL，前端可以用 PUT 方法直接把文件传到这个 URL
         """
@@ -36,7 +37,7 @@ class R2Storage:
             Params={
                 "Bucket": self.bucket,
                 "Key": object_name,
-                "ContentType": content_type# 泛指任意二进制流
+                "ContentType": content_type  # 泛指任意二进制流
             },
             ExpiresIn=expiration,
         )
@@ -49,5 +50,28 @@ class R2Storage:
             "public_url": public_url
         }
 
+    def upload_bytes(
+            self,
+            data: bytes,
+            object_name: str,
+            content_type: str = 'application/octet-stream'
+    ) -> str:
+        """
+                后端直传：把二进制数据上传到 R2，返回公网可访问的 URL。
+
+                用于后端生成的内容（如 AI 生成图片），区别于前端直传的预签名方式。
+                调用方应使用 asyncio.to_thread 包装此方法以避免阻塞事件循环。
+                """
+        if not settings.R2_PUBLIC_URL:
+            raise ValueError("R2_PUBLIC_URL is not configured; cannot build public URL.")
+
+        self.s3_client.put_object(
+            Bucket=self.bucket,
+            Key=object_name,
+            Body=data,
+            ContentType=content_type,
+        )
+
+        return f"{settings.R2_PUBLIC_URL}/{object_name}"
 
 r2_storage = R2Storage()

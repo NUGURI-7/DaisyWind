@@ -84,6 +84,16 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-04-25（Nano Banana 图像生成接入 + 消息复制图片支持）
+- **Nano Banana 接入**：对接 Gemini 图像生成模型 `gemini-3.1-flash-image-preview` / `gemini-3-pro-image-preview`，支持在对话流中直接生成图片。完整方案见 `docs/nano-banana-integration.md`。
+- **PydanticAI 适配**：图像模型必须显式 `output_type=[str, BinaryImage]`，否则 Agent 默认 `str` 输出会触发 RetryPrompt 把图片丢弃；图像模型还不支持 tools，需按 `provider=="gemini" and "image" in model_name` 分流（system_prompt / output_type / tool 注册三处）。
+- **R2 后端直传**：`R2Storage.upload_bytes()` 新方法配合 `asyncio.to_thread`，stream.py 收到 `FilePart(BinaryImage)` 后上传到 `chat/gemini_generated/{user_id}/{uuid}.{ext}`（按 `media_type` 自动识别 jpg/png/webp）。
+- **SSE image 事件**：单一 `image` 事件类型 + `status` 字段（`loading`/`ready`/`error`/`removed`），用 `id` 串起 block 生命周期。stream.py 在调用 Gemini 之前就预发 loading 占位，让前端 Trefoil 动画从用户提交那一刻就显示。
+- **新增 ImageBlock**：后端 `chat_schema.ImageBlock` + 前端 `components/chat/components/blocks/ImageBlock.vue`（`ldrs` Trefoil + ready/error 三态），加入 `ContentBlock` / `RenderBlock` 联合类型；持久化只存 `ready` 状态。
+- **兜底逻辑**：图像模型偶尔只回文字（拒绝/澄清），通过 `pending_image_id` + `has_text` 判断把幽灵 loading 占位移除（`status: removed`）；完全无输出时标 error。
+- **计费扩展**：`pricing.py` 加 `image_count` 参数和 `image_output_per_unit` 字段，按张计费（Pro $0.134 / Flash $0.067）。
+- **消息复制图片**：`messageContent.ts` 的 `assistantBlocksToMarkdown` 加 image 分支，输出 `![generated image](url)` Markdown 语法，纯图片消息也能正常复制。
+
 ### 2026-04-23（Conversation Ingestion 架构定稿：Graph + Agent-in-Node + 自研图引擎 + Vue Flow）
 - **范式定稿**：放弃 Pipeline 与 Pure Agent Loop，采用 Graph + Agent-in-Node 混合架构。外层图驱动调度，内层节点可包装 PydanticAI Agent。
 - **框架选型**：自研图引擎（~400 LOC 核心 + ~150 LOC 持久化），不用 LangGraph、不用 pydantic-graph。理由：需求集小、数据结构自控、未来做拖拽编辑器更顺。
@@ -157,6 +167,9 @@
 - 优化了 Notes 列表交互（左侧高亮指示线，Hover 微移，时间重排）。
 - 引入 URL 驱动状态，通过 `vue-router` 将 `selectedId` 绑定至 URL query，解决刷新和路由切换时的状态丢失问题。
 - 重绘了无笔记选中时的右侧引导空状态（Empty State）组件。
+
+### 2026-04-25（Bug 修复）
+- 修复了在非安全上下文（如非 localhost 的 HTTP 环境）下因 `navigator.clipboard` 为 undefined 导致的文本复制失败报错问题。提取了通用的 `copyToClipboard` 工具函数，并对 `MessageActions.vue` 和 `MarkdownRender.vue` 进行了统一改造。
 
 ## 历史摘要
 - 早期 backend 基础已经具备 FastAPI app 启动、Redis/PostgreSQL 生命周期接入、Tortoise ORM 模型和 auth 相关服务。

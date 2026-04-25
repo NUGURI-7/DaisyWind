@@ -25,6 +25,7 @@ export interface ContentBlockStopPayload {
 export interface UsageInfo {
   input_tokens: number
   output_tokens: number
+  image_count?: number
   cost: number | null
 }
 
@@ -55,7 +56,14 @@ export interface ApiToolUseBlock {
   output: unknown
 }
 
-export type ContentBlock = ApiTextBlock | ApiToolUseBlock
+export interface ApiImageBlock {
+  type: 'image'
+  id: string
+  status: 'ready' // 持久化层只存成功的
+  url: string
+}
+
+export type ContentBlock = ApiTextBlock | ApiToolUseBlock | ApiImageBlock
 
 // ==================== P1 Tool 事件 Payload ====================
 
@@ -86,6 +94,13 @@ export interface ToolUseDeltaPayload {
   partial_json: string
 }
 
+export interface ImageEventPayload {
+  id: string
+  status: 'loading' | 'ready' | 'error' | 'removed'
+  url?: string
+  message?: string
+}
+
 // ==================== 前端渲染状态 ====================
 
 export interface TextBlock {
@@ -108,7 +123,16 @@ export interface ToolUseBlock {
   collapsed: boolean
 }
 
-export type RenderBlock = TextBlock | ToolUseBlock
+export interface ImageBlock {
+  type: 'image'
+  index: number
+  id: string
+  status: 'loading' | 'ready' | 'error'
+  url: string | null
+  errorMessage: string | null
+}
+
+export type RenderBlock = TextBlock | ToolUseBlock | ImageBlock
 
 export interface AssistantMessage {
   role: 'assistant'

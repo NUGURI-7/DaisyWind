@@ -19,6 +19,9 @@ import type {
   ToolUseStopPayload,
   ToolUseDeltaPayload,
   ToolResultPayload,
+  ImageEventPayload,
+  ImageBlock,
+  ApiImageBlock,
 } from '@/types/chat'
 
 import {
@@ -216,6 +219,41 @@ export const useChatStore = defineStore('chat', () => {
             break
           }
 
+          case 'image': {
+            const d = payload as ImageEventPayload
+            if (!streaming.value) break
+            // 移除占位（loading 没被认领的兜底）
+            if (d.status === 'removed') {
+              streaming.value.blocks = streaming.value.blocks.filter(
+                (b) => !(b.type === 'image' && b.id === d.id),
+              )
+              break
+            }
+
+            const existing = streaming.value.blocks.find(
+              (b) => b.type === 'image' && b.id === d.id,
+            ) as ImageBlock | undefined
+
+            if (!existing) {
+              // 首次收到该 id（通常是 loading 状态）→ 创建 block
+              const block: ImageBlock = {
+                type: 'image',
+                index: streaming.value.blocks.length,
+                id: d.id,
+                status: d.status,
+                url: d.url ?? null,
+                errorMessage: d.message ?? null,
+              }
+              streaming.value.blocks.push(block)
+            } else {
+              // 后续 ready / error 事件 → 更新既有 block
+              existing.status = d.status
+              if (d.url) existing.url = d.url
+              if (d.message) existing.errorMessage = d.message
+            }
+            break
+          }
+
           case 'message_stop': {
             if (streaming.value) {
               // 兜底：把所有还处于 'active' 的 text block 收尾，避免最后一段文字没收到
@@ -309,6 +347,17 @@ export const useChatStore = defineStore('chat', () => {
               content: b.text,
             }
           }
+          if (b.type === 'image') {
+            const apiBlock = b as ApiImageBlock
+            return {
+              type: 'image',
+              index: i,
+              id: apiBlock.id,
+              status: 'ready',
+              url: apiBlock.url,
+              errorMessage: null,
+            }
+          }
           // tool_use
           const apiBlock = b as ApiToolUseBlock
           const firstValue = Object.values(apiBlock.input).find((v) => typeof v === 'string')
@@ -316,8 +365,8 @@ export const useChatStore = defineStore('chat', () => {
             type: 'tool_use',
             index: i,
             status: apiBlock.status,
-            id: apiBlock.id, // <-- 这里
-            name: apiBlock.name, // <-- 这里
+            id: apiBlock.id,
+            name: apiBlock.name,
             inputPreview:
               typeof firstValue === 'string' ? firstValue : JSON.stringify(apiBlock.input),
             partialInputJson: JSON.stringify(apiBlock.input),

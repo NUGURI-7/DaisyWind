@@ -14,6 +14,11 @@ function assistantBlocksToMarkdown(msg: AssistantMessage): string {
     } else if (block.type === 'tool_use') {
       // 占位：先用一个注释行表示工具调用，后续可扩展
       parts.push(`> [调用工具: ${block.name}]`)
+    } else if (block.type === 'image') {
+      // 已成功上传的图片用 Markdown 图片语法；loading/error 跳过
+      if (block.status === 'ready' && block.url) {
+        parts.push(`![generated image](${block.url})`)
+      }
     }
   }
 

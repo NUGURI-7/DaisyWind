@@ -88,6 +88,9 @@ const MODEL_OPTIONS: ModelOption[] = [
   { provider: 'deepseek', model: 'deepseek-chat', label: 'DeepSeek Chat' },
   { provider: 'gemini', model: 'gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro' },
   { provider: 'gemini', model: 'gemini-3-flash-preview', label: 'Gemini 3 Flash' },
+  { provider: 'gemini', model: 'gemini-3.1-flash-lite-preview', label: 'Gemini 3.1 Flash-Lite' },
+  { provider: 'gemini', model: 'gemini-3.1-flash-image-preview', label: 'Nano Banana 2' },
+  { provider: 'gemini', model: 'gemini-3-pro-image-preview', label: 'Nano Banana Pro' },
 ]
 
 const STORAGE_KEY = 'chat:selectedModel'

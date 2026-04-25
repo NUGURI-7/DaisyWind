@@ -30,6 +30,7 @@
           <template v-for="block in msg.blocks" :key="block.index">
             <TextBlock v-if="block.type === 'text'" :block="block" />
             <ToolUseBlock v-else-if="block.type === 'tool_use'" :block="block" />
+            <ImageBlock v-else-if="block.type === 'image'" :block="block" />
           </template>
 
           <ThreeSpinner
@@ -89,6 +90,7 @@ import { useResizeObserver } from '@vueuse/core'
 import { PhArrowDown } from '@phosphor-icons/vue'
 import TextBlock from './blocks/TextBlock.vue'
 import ToolUseBlock from './blocks/ToolUseBlock.vue'
+import ImageBlock from './blocks/ImageBlock.vue'
 import type { ChatMessage, RenderBlock } from '@/types/chat'
 import ThreeSpinner from '@/components/common/ThreeSpinner.vue'
 import MarkdownRender from './MarkdownRender.vue'

@@ -6,7 +6,7 @@
     @desc:
 """
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, BinaryImage
 
 from backend.app.agents.deps import AgentDeps
 from backend.app.agents.providers import build_model
@@ -33,8 +33,17 @@ cutoff, use the `tavily_web_search` or `brave_web_search` tool to search the pub
 it for questions you can confidently answer from general knowledge.
 """
 
+IMAGE_SYSTEM_PROMPT = """\
+You are an image generation assistant.
 
-def build_chat_agent(provider: str, model_name: str) -> Agent[AgentDeps, str]:
+For every user request, your primary output MUST be a generated image.
+- Always produce an image, even if the request is brief or ambiguous — make a reasonable interpretation and generate.
+- Do not reply with text-only refusals or clarifying questions; if the request is unclear, generate your best guess.
+- Keep any accompanying text minimal (one short caption at most). The image is the answer.
+- Match the language of any caption to the user's language.
+"""
+
+def build_chat_agent(provider: str, model_name: str) -> Agent[AgentDeps, str | BinaryImage]:
     """构造一个基础 Chat Agent（无 Tool）。
 
     Args:
@@ -45,14 +54,21 @@ def build_chat_agent(provider: str, model_name: str) -> Agent[AgentDeps, str]:
         配置好的 PydanticAI Agent，output 类型为 str（纯文本）
     """
     model = build_model(provider, model_name)
-    agent = Agent(
-        model,
-        system_prompt=SYSTEM_PROMPT,
-        deps_type=AgentDeps,
-    )
 
-    agent.tool(search_notes)
-    agent.tool(tavily_web_search)
-    agent.tool(brave_web_search)
+    is_image_model = provider == 'gemini' and 'image' in model_name
+
+    agent_kwargs = {
+        "system_prompt": IMAGE_SYSTEM_PROMPT if is_image_model else SYSTEM_PROMPT,
+        "deps_type": AgentDeps,
+    }
+    if is_image_model:
+        agent_kwargs["output_type"] = [str, BinaryImage]
+
+    agent = Agent(model, **agent_kwargs)
+
+    if not is_image_model:
+        agent.tool(search_notes)
+        agent.tool(tavily_web_search)
+        agent.tool(brave_web_search)
 
     return agent

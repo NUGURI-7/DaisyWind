@@ -5,19 +5,22 @@
     @date: 2026/4/12 15:15
     @desc: SSE 流式对话端点
 """
+import asyncio
 import json
+from uuid import uuid4
 
 from fastapi import APIRouter, Depends
 from pydantic_ai import Agent, PartStartEvent, TextPart, PartDeltaEvent, TextPartDelta, PartEndEvent, \
-    AgentRunResultEvent, ToolCallPart, ToolCallPartDelta, FunctionToolResultEvent
+    AgentRunResultEvent, ToolCallPart, ToolCallPartDelta, FunctionToolResultEvent, FilePart
 from starlette.responses import StreamingResponse
 
 from backend.app.agents.chat_agent import build_chat_agent
 from backend.app.agents.deps import AgentDeps
 from backend.app.agents.pricing import calc_cost
 from backend.app.core.depends import get_current_user
+from backend.app.core.storage import r2_storage
 from backend.app.models import User, Conversation
-from backend.app.schemas.chat_schema import ChatRequest, MessageRole, TextBlock, ToolUseBlock
+from backend.app.schemas.chat_schema import ChatRequest, MessageRole, TextBlock, ToolUseBlock, ImageBlock
 from backend.app.services.chat_service import ChatService
 from backend.app.services.sse import sse_event
 
@@ -60,6 +63,22 @@ async def stream_generator(
         "model": request.model,
         "provider": request.provider
     })
+
+    is_image_model = request.provider == "gemini" and "image" in request.model
+    pending_image_id: str | None = None
+    if is_image_model:
+        pending_image_id = f"ima_{uuid4().hex}"
+        blocks.append({
+            "type":"image",
+            "id": pending_image_id,
+            "status": "loading",
+            "url": None,
+            "message": None
+        })
+        yield sse_event("image",{
+            "id": pending_image_id,
+            "status": "loading"
+        })
 
     try:
         async for event in agent.run_stream_events(
@@ -189,11 +208,75 @@ async def stream_generator(
                 # 必须清掉旧映射，否则下一轮的 delta 会路由到上一轮的 block
                 part_idx_to_list_idx.clear()
 
+            # ============ 图片块（Nano Banana / Gemini 图像输出） ============
+            elif isinstance(event, PartStartEvent) and isinstance(event.part, FilePart):
+                binary = event.part.content
+                image_bytes = binary.data
+                media_type = binary.media_type    # "image/jpeg" / "image/png" / ...
+                ext = media_type.split("/")[-1]
+                if ext == "jpeg":
+                    ext = "jpg"
+
+                object_name = f"chat/gemini_generated/{deps.user.id}/{uuid4().hex}.{ext}"
+                # 优先复用已经预发出去的 loading 占位（多图场景下后续的才新建）
+                if pending_image_id is not None:
+                    placeholder_id = pending_image_id
+                    li = next(i for i,b in enumerate(blocks) if b.get("id") == placeholder_id)
+                    part_idx_to_list_idx[event.index] = li
+                    pending_image_id = None  # 标记已被认领
+                else:
+
+                    placeholder_id = f"ima_{uuid4().hex}"
+
+                    blocks.append({
+                        "type": "image",
+                        "id": placeholder_id,
+                        "status": "loading",
+                        "url": None,
+                        "message": None,
+                    })
+                    li = len(blocks) - 1
+                    part_idx_to_list_idx[event.index] = li
+
+                    # 先发 loading 让前端立即显示 Trefoil 动画
+                    yield sse_event("image", {
+                        "id": placeholder_id,
+                        "status": "loading",
+                    })
+
+                try:
+                    url = await asyncio.to_thread(
+                        r2_storage.upload_bytes,
+                        image_bytes,
+                        object_name,
+                        media_type
+                    )
+                    blocks[li]["status"] = "ready"
+                    blocks[li]["url"] = url
+                    yield sse_event("image",{
+                        "id": placeholder_id,
+                        "status": "ready",
+                        "url": url,
+                    })
+                except Exception as e:
+                    blocks[li]["status"] = "error"
+                    blocks[li]["message"] = str(e)
+                    yield sse_event("image",{
+                        "id": placeholder_id,
+                        "status": "error",
+                        "message": str(e)
+                    })
+
             # ============ Agent 运行完成 ============
 
             elif isinstance(event, AgentRunResultEvent):
                 usage = event.result.usage()
-                cost = calc_cost(request.model, usage.input_tokens, usage.output_tokens)
+                # 统计本次输出中成功上传的图片张数用于计费
+                image_count = sum(
+                    1 for b in blocks
+                    if b.get("type") == "image" and b.get("status") == "ready"
+                )
+                cost = calc_cost(request.model, usage.input_tokens, usage.output_tokens, image_count=image_count)
                 yield sse_event("message_delta", {
                     "stop_reason": "end_turn",
                     "usage": {
@@ -203,6 +286,33 @@ async def stream_generator(
                     }
                 })
 
+        # 图像模型兜底：预发的 loading 占位没被认领的处理
+        if pending_image_id is not None:
+            # 检查这一轮有没有任何 text block 产生
+            has_text = any(
+                b.get("type") == "text" and (b.get("text") or "").strip()
+                for b in blocks
+            )
+            if has_text:
+                # 模型给了文字解释（拒绝/澄清），移除幽灵 loading 占位
+                blocks[:] = [b for b in blocks if b.get("id") != pending_image_id]
+
+                yield sse_event("image", {
+                    "id": pending_image_id,
+                    "status": "removed"
+                })
+            else:
+                # 完全没图也没文字，标记为 error
+                for b in blocks:
+                    if b.get("id") == pending_image_id:
+                        b["status"] = "error"
+                        b["message"] = "No image returned"
+                        break
+                yield sse_event("image", {
+                    "id": pending_image_id,
+                    "status": "error",
+                    "message": "No image returned",
+                })
         yield sse_event("message_stop", {})
 
     except Exception as e:
@@ -228,6 +338,15 @@ async def stream_generator(
                         status=ob.get("status", "success"),
                         output=ob.get("output"),
                     ))
+                elif ob["type"] == "image":
+            # 只持久化已成功上传的图片；loading/error 的丢弃
+                    if ob.get("status") == "ready" and ob.get("url"):
+                        content_blocks.append(ImageBlock(
+                            type="image",
+                            id=ob["id"],
+                            status="ready",
+                            url=ob["url"],
+                        ))
 
             if content_blocks:
                 await ChatService.add_message(

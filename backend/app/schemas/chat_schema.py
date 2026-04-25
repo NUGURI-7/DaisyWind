@@ -29,7 +29,21 @@ class ToolUseBlock(BaseModel):
     status: Literal["success", "error"] = "success"
     output: Any = None
 
-ContentBlock = TextBlock | ToolUseBlock
+class ImageBlock(BaseModel):
+    """assistant 生成的图片 block（Nano Banana / Gemini 图像模型）。
+
+        生命周期三态：
+        - loading: 后端收到 FilePart，正在上传 R2
+        - ready:   已上传成功，url 可访问
+        - error:   上传失败，message 携带原因
+    """
+    type: Literal["image"] = "image"
+    id: str
+    status: Literal["loading","ready", "error"] = "loading"
+    url: Optional[str] = None
+    message: Optional[str] = None
+
+ContentBlock = TextBlock | ToolUseBlock | ImageBlock
 
 class ChatRequest(BaseModel):
     """发送消息请求"""
