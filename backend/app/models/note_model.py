@@ -10,9 +10,9 @@ from backend.app.db.base import BaseModel, UUIDModel, TimestampMixin
 
 
 class Note(BaseModel, UUIDModel, TimestampMixin):
-    user = fields.ForeignKeyField("models.User", related_name="notes", index=True)
+    user = fields.ForeignKeyField("models.User", related_name="notes")
     content = fields.TextField(default="")
-    title = fields.CharField(max_length=255, default="Untitled", index=True)
+    title = fields.CharField(max_length=255, default="Untitled")
     preview = fields.CharField(max_length=100, default="")
     deleted_at = fields.DatetimeField(null=True, default=None)
 

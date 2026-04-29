@@ -25,6 +25,7 @@ class Conversation(BaseModel, UUIDModel, TimestampMixin):
     class Meta:
         table = "conversation"
         ordering = ["-updated_at"]
+        indexes = [("user_id", "updated_at")]
 
     def __str__(self):
         return f"Conversation({self.title})"
@@ -44,6 +45,7 @@ class ChatMessage(BaseModel, UUIDModel, TimestampMixin):
     class Meta:
         table = "chat_message"
         ordering = ["created_at"]
+        indexes = [("conversation_id", "created_at")]
 
     def __str__(self):
         return f"Message({self.role}: {self.content[:30]})"
