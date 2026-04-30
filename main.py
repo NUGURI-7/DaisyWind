@@ -13,9 +13,18 @@ from backend.app.core.exceptions import AppApiException
 from backend.app.core.middlewares import register_middlewares
 from backend.app.core.redis import RedisClient
 from backend.app.db.postgresql import PostgreSQLClient, TORTOISE_CONFIG
+import backend.app.ingestion.nodes  # noqa: F401  触发节点注册
+from backend.app.ingestion.graph.sync import sync_workflow_templates
 from config import settings
 from contextlib import asynccontextmanager
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +35,7 @@ async def lifespan(app: FastAPI):
 
     # db_init() 链接数据库
     async with RegisterTortoise(app, config=TORTOISE_CONFIG):
+        await sync_workflow_templates()
         print("🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖🤖")
         print(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION}")
         print("✨ 初始化完成 ✨ ")
@@ -79,5 +89,6 @@ if __name__ == "__main__":
         "main:app",
         host=settings.HOST,
         port=settings.PORT,
-        reload=settings.RELOAD
+        reload=settings.RELOAD,
+        access_log=False
     )
