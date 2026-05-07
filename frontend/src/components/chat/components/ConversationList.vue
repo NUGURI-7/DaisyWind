@@ -30,34 +30,44 @@
         >
           <span class="flex-1 truncate text-sm">{{ conv.title || '未命名' }}</span>
 
-          <button
-            class="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded hover:bg-destructive/10 hover:text-destructive transition"
-            @click.stop="handleDelete(conv)"
-            aria-label="删除对话"
-          >
-            <PhTrash :size="12" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button
+                class="opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 shrink-0 p-1 rounded hover:bg-accent transition"
+                @click.stop
+                aria-label="对话操作"
+              >
+                <PhDotsThreeCircle :size="14" />
+              </button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" class="w-40" @click.stop>
+              <DropdownMenuItem @select="handleToNote(conv)">
+                <PhFileText :size="14" />
+                <span>To Note</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                @select="handleDelete(conv)"
+                class="text-destructive focus:text-destructive"
+              >
+                <PhTrash :size="14" />
+                <span>Delete</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </li>
       </ul>
     </div>
-    <AlertDialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
-      <AlertDialogContent>
+    <AlertDialog :open="showToNoteLoadingDialog">
+      <AlertDialogContent @escape-key-down.prevent @interact-outside.prevent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete chat</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to delete this chat?
-          </AlertDialogDescription>
+          <AlertDialogTitle>正在生成笔记</AlertDialogTitle>
+          <AlertDialogDescription> AI 正在整理对话内容，请稍候…… </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
-          <!-- 使用 destructive 颜色来匹配红色的删除按钮 -->
-          <AlertDialogAction
-            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            @click="executeDelete"
-          >
-            Delete
-          </AlertDialogAction>
-        </AlertDialogFooter>
+        <div class="flex justify-center py-4">
+          <l-hourglass size="40" stroke="3" speed="0.9" color="currentColor" />
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   </div>
@@ -65,7 +75,16 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { PhTrash } from '@phosphor-icons/vue'
+import { PhDotsThreeCircle, PhTrash, PhFileText } from '@phosphor-icons/vue'
+import ingestionApi from '@/api/ingestion'
+import { toast } from 'vue-sonner'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import { useChatStore } from '@/stores/chat'
 import type { ConversationSummary } from '@/api/chat'
 
@@ -87,6 +106,7 @@ const chat = useChatStore()
 const router = useRouter()
 
 const showDeleteDialog = ref(false)
+const showToNoteLoadingDialog = ref(false)
 const itemToDelete = ref<ConversationSummary | null>(null)
 
 onMounted(() => {
@@ -100,6 +120,23 @@ function handleSelect(uuid: string) {
 function handleDelete(conv: ConversationSummary) {
   itemToDelete.value = conv
   showDeleteDialog.value = true
+}
+
+async function handleToNote(conv: ConversationSummary) {
+  showToNoteLoadingDialog.value = true
+  try {
+    const res = await ingestionApi.runFromConversation(conv.uuid)
+    const noteUuid = res?.data?.note_uuid
+    if (noteUuid) {
+      await router.push({ path: '/notes', query: { id: noteUuid } })
+    } else {
+      toast.error('笔记生成失败，请稍后重试')
+    }
+  } catch {
+    // 网络/HTTP 错误已由 axios 拦截器统一 toast，这里只负责吞掉避免 console 噪音
+  } finally {
+    showToNoteLoadingDialog.value = false
+  }
 }
 
 async function executeDelete() {

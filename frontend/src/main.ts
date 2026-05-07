@@ -5,9 +5,10 @@ import Components from '@/components'
 import App from './App.vue'
 import router from './router'
 import './app.css'
-import { pinwheel, helix } from 'ldrs'
+import { pinwheel, helix, hourglass } from 'ldrs'
 helix.register()
 pinwheel.register()
+hourglass.register()
 
 const app = createApp(App)
 
