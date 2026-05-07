@@ -45,7 +45,7 @@ class SinkNode(NodeType):
             preview=preview
         )
 
-        return {"note_id": note.id}
+        return {"note_uuid": str(note.uuid)}
 
 
 

@@ -44,7 +44,7 @@ async def run_ingestion(
     return success(data={
         "run_uuid": str(run.uuid),
         "status": run.status,
-        "note_id": run.blackboard.get("note_id"),
+        "note_uuid": run.blackboard.get("note_uuid"),
         "draft": run.blackboard.get("draft", ""),
-        "outline": run.blackboard.get("outline", {}),  # {"title": "...", "tags": [...], "summary": "..."}
+        "outline": run.blackboard.get("outline"),  # {"title": "...", "tags": [...], "summary": "..."}
     })
