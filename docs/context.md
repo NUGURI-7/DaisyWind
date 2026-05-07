@@ -68,8 +68,14 @@
 - Settings 入口已接入 ThemeSwitcher（Popover 弹出，含 12 主题色 + Light/Dark 切换）。
 
 ## 下一步
-- **当前重点**：Conversation Ingestion 模块（多 Agent 编排）—— 把对话整理成结构化 Note，同时为 P2 RAG 准备语料。详见 `docs/ingestion-architecture.md`。
-- **后续**：Chat P2 — RAG 知识库检索（pgvector + Embedding）。详见 `docs/roadmap.md`。
+- **Ingestion 骨架补强**（按优先级，源自 2026-05-07 架构评审）：
+  1. `IngestionRun.last_event_seq` 字段 + 迁移（防止多 worker 并发 emit 撞 `(run_id, seq)` unique 约束）
+  2. `WorkflowTemplate.is_active` 字段 + 迁移（决定启动 run 用哪一版，不靠 max(version)）
+  3. Blackboard Pydantic schema（避免节点字段 typo 运行时才暴露）
+  4. `validator.py` 落地：可达性 / 非 back_edge 不成环 / back_edge 真回连祖先
+  5. 节点 `idempotent` 字段语义定义 + 引擎消费（当前是占位字段）
+- **Ingestion 后续**：ARQ 异步执行 + SSE 进度推送 + Critic / HumanReview 节点 + 回环 max_iterations
+- **更远**：Chat P2 — RAG 知识库检索（pgvector + Embedding）。详见 `docs/roadmap.md`。
 - **流式渲染规范**：SSE 事件协议、前端块级状态机、组件映射。详见 `docs/streaming-render.md`。
 
 ## 开发注意事项
@@ -84,6 +90,32 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-05-07（Ingestion 架构评审 + 端到端最小流程跑通 + Chat 列表加 To Note 入口）
+**架构评审 & registry 搬家**：
+- 节点注册表从 `graph/registry.py` 迁至 `nodes/registry.py`，用 `TYPE_CHECKING` 切断 graph→nodes 反向依赖
+- 评审列出 5 项后续骨架改进（未做）：`last_event_seq` 字段 / `workflow_template.is_active` 版本选取 / Blackboard Pydantic schema / `validator.py` 落地（DAG / 可达性 / back_edge 真回连）/ 节点 `idempotent` 语义
+
+**Ingestion 端到端最小流程**（commit `20dd013`）：
+- `GraphEngine` 当前同步阻塞执行（ARQ 留待后续）：load snapshot → find ready → exec → propagate
+- 节点：`SourceNode`（internal/link/pasted）+ `WriterNode`（PydanticAI Agent，输出 `NoteDraft{draft, outline:NoteOutline}`）+ `SinkNode`
+- 系统模板 `templates/conversation_to_note.yaml`：source → writer → sink
+- API：`POST /ingestion/run`
+
+**响应契约修正**：
+- sink 节点输出 `note_uuid`（替代 `note_id`，前端 Notes 路由按 uuid 寻址）
+- API 响应 `outline` 在失败/未生成时为 `null`（去掉 `{}` 默认）
+- `IngestionRequest.source_input` 改为可选，internal 模式不再 422
+
+**Chat 列表加 To Note 入口**：
+- 装 shadcn-vue `dropdown-menu`（reka-ui 已有，无需新依赖）
+- `ConversationList` 行 hover 由垃圾桶按钮改为 kebab 三点菜单：To Note / divider / Delete（红色）；键盘 Tab/Enter/Esc 全可用
+- 新增 `frontend/src/api/ingestion.ts`，暴露 `runFromConversation(uuid)`
+- "To Note" 触发后弹阻塞 loading dialog（`<l-hourglass>`）→ 调 `/ingestion/run` → 跳 `/notes?id=<note_uuid>`
+- 错误处理：HTTP 错误由 axios 拦截器统一 toast；`note_uuid` 为空时本地 toast 兜底
+
+**NoteList UX 微调**：
+- 删除当前选中笔记后，URL 跳到 store 自动选中的下一篇，不再清空 query
+
 ### 2026-04-26（Conversation Ingestion 架构重构：砍掉用户级编辑器 + 改用 Config-as-Code）
 - **明确不做**：前端拖拽工作流编辑器、用户级参数编辑、草稿/发布机制、多模板用户协作。理由：被 Coze/Dify 大厂垄断，个人验证平台收益低，简历价值低。
 - **改用 Config-as-Code**：工作流定义改为 `backend/app/ingestion/templates/*.yaml`，启动时同步入 `workflow_template` 表，version 单调递增。改 prompt = 改 YAML + version+1 + 重启。
@@ -103,16 +135,6 @@
 - **计费扩展**：`pricing.py` 加 `image_count` 参数和 `image_output_per_unit` 字段，按张计费（Pro $0.134 / Flash $0.067）。
 - **消息复制图片**：`messageContent.ts` 的 `assistantBlocksToMarkdown` 加 image 分支，输出 `![generated image](url)` Markdown 语法，纯图片消息也能正常复制。
 - **Clipboard 工具抽取**：把 MarkdownRender 内联的 `copyToClipboard` 抽到 `utils/clipboard.ts`，MessageActions 改为统一调用，修复非安全上下文（HTTP）下消息复制失败的问题。
-
-### 2026-04-23（Conversation Ingestion 架构定稿：Graph + Agent-in-Node + 自研图引擎 + Vue Flow）
-- **范式定稿**：放弃 Pipeline 与 Pure Agent Loop，采用 Graph + Agent-in-Node 混合架构。外层图驱动调度，内层节点可包装 PydanticAI Agent。
-- **框架选型**：自研图引擎（~400 LOC 核心 + ~150 LOC 持久化），不用 LangGraph、不用 pydantic-graph。理由：需求集小、数据结构自控、未来做拖拽编辑器更顺。
-- **图作为数据**：`GraphTemplate` 表存模板，`IngestionRun.graph_snapshot` 启动时拍快照，模板被改不影响已跑 run（类比 GitHub Actions workflow run）。
-- **回环处理**：Critic → Writer 用图层面 back-edge + `max_iterations: 3`，前端可视化反思过程。
-- **前端选型**：Vue Flow 只读模式（dagre 自动布局 + 节点状态实时高亮 + await_user 交互），未来开拖拽编辑零迁移。
-- **图 CRUD 写接口首版不暴露**，未来直接新增 endpoint。`GET /node-types` 接口必须存在（暴露节点类型 + 参数 JSONSchema）。
-- **节点集（首版）**：Source / Classifier / Outliner / HumanReview / Writer / Critic / Sink；全部默认 deepseek-chat，前端可覆盖 model。
-- **新增决议条目**：见 `docs/ingestion-architecture.md` §十 共 13 条已决议。
 
 ### 2026-04-22（Markdown 渲染接入 + 布局调整）
 - **Chat Markdown 渲染**：新增 `components/chat/components/MarkdownRender.vue`，接入 `markdown-it` + `dompurify`（XSS 防护）+ `highlight.js`（代码高亮）+ `shiki` + `morphdom`（流式增量 DOM diff）+ `@tailwindcss/typography`。`TextBlock` 和 User 消息气泡均改用 `MarkdownRender`，流式阶段通过 `is-streaming` 触发防抖和软闭合，避免未闭合 markdown 块导致的渲染抖动。
@@ -157,6 +179,7 @@
 - 2026-03-13：主题系统落地，11 套暖色 CSS 变量 + Light/Dark 切换 + Sidebar Settings 入口。
 - 2026-03-14：Cloudflare R2（S3 兼容）对象存储后端接入，前端直传 Presigned URL 方案。
 - 2026-03-17：Notes 前端图片直传接入（Crepe 编辑器 / 拖拽 / 粘贴），Sidebar 动画重构，API 路径统一为 `current-user`。
+- 2026-04-23：Ingestion 架构初版方案（Graph + Agent-in-Node + 自研图引擎 + Vue Flow 拖拽编辑器），已被 2026-04-26 推翻。
 
 ## 后续使用方式
 - 每次开启新的 AI 对话时，先读取这个文件。
