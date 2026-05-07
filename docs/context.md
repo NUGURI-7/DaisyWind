@@ -84,6 +84,15 @@
 - 如果某次改动不足以影响项目理解，就不要把噪音写进来。
 
 ## 最近迭代
+### 2026-04-26（Conversation Ingestion 架构重构：砍掉用户级编辑器 + 改用 Config-as-Code）
+- **明确不做**：前端拖拽工作流编辑器、用户级参数编辑、草稿/发布机制、多模板用户协作。理由：被 Coze/Dify 大厂垄断，个人验证平台收益低，简历价值低。
+- **改用 Config-as-Code**：工作流定义改为 `backend/app/ingestion/templates/*.yaml`，启动时同步入 `workflow_template` 表，version 单调递增。改 prompt = 改 YAML + version+1 + 重启。
+- **DB 简化**：原 4 张表（workflow_template / workflow_draft / ingestion_run / ingestion_event）砍为 3 张，删除 workflow_draft。
+- **前端简化**：彻底不引入 Vue Flow / dagre / SVG。改用 Timeline + shadcn-vue Card/Collapsible/Badge 做运行状态观察，节点输出可展开，工程量降为原方案 1/4。
+- **生产级扩展性决议**（架构文档第 11 节）：8 项 day-1 钩子（互斥锁、attempt 计数、schema_version、SSE seq、budget cap、authz dep、cancel 语义、awaiting TTL）确认保留。
+- **新增决议**：第 10 节累计 16 条已决议项。
+- 详见重写后的 `docs/ingestion-architecture.md`。
+
 ### 2026-04-25（Nano Banana 图像生成接入 + 消息复制图片支持 + Clipboard 工具抽取）
 - **Nano Banana 接入**：对接 Gemini 图像生成模型 `gemini-3.1-flash-image-preview` / `gemini-3-pro-image-preview`，支持在对话流中直接生成图片。完整方案见 `docs/nano-banana-integration.md`。
 - **PydanticAI 适配**：图像模型必须显式 `output_type=[str, BinaryImage]`，否则 Agent 默认 `str` 输出会触发 RetryPrompt 把图片丢弃；图像模型还不支持 tools，需按 `provider=="gemini" and "image" in model_name` 分流（system_prompt / output_type / tool 注册三处）。
