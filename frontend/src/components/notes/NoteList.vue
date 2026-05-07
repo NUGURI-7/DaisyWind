@@ -136,11 +136,20 @@ const executeDelete = async () => {
   if (!idToDelete.value) return
 
   const id = idToDelete.value
+
+  // 1. 在删除之前，先判断当前删除的这篇是不是正在被选中的笔记
+  const isDeletingSelected = store.selectedId === id
+
+  // 2. 执行删除（这步会自动把 store.selectedId 更新为下一篇）
   await store.remove(id)
 
-  if (store.selectedId === id) {
-    store.selectedId = null
-    router.push({ query: {} })
+  // 3. 如果删除的是当前选中的笔记，就让 URL 去匹配新的选中项
+  if (isDeletingSelected) {
+    if (store.selectedId) {
+      router.push({ query: { id: store.selectedId } })
+    } else {
+      router.push({ query: {} })
+    }
   }
 
   // 清理状态
