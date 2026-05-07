@@ -28,3 +28,4 @@ frontend/.env.production
 .vscode
 .python-version
 backend/.claude/settings.local.json
+.claude/worktrees/
