@@ -59,6 +59,25 @@
         </li>
       </ul>
     </div>
+    <AlertDialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete chat</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete this chat?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            @click="executeDelete"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <AlertDialog :open="showToNoteLoadingDialog">
       <AlertDialogContent @escape-key-down.prevent @interact-outside.prevent>
         <AlertDialogHeader>
