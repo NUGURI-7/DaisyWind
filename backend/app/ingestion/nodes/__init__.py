@@ -4,5 +4,7 @@
     @desc: 导入此包即触发所有节点类型注册到 registry。
 """
 from backend.app.ingestion.nodes import sink_node  # noqa: F401
+from backend.app.ingestion.nodes import source_node  # noqa: F401
+from backend.app.ingestion.nodes import writer_node  # noqa: F401
 
-__all__ = ["sink_node"]
+__all__ = ["sink_node","source_node","writer_node"]

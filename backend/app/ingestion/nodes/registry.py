@@ -6,7 +6,10 @@
 
 from __future__ import annotations
 
-from backend.app.ingestion.nodes.base import NodeType
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from backend.app.ingestion.nodes.base import NodeType
 
 _REGISTRY: dict[str, type[NodeType]] = {}
 

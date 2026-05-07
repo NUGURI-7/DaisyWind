@@ -14,7 +14,7 @@ from typing import Any
 
 import yaml
 
-from backend.app.ingestion.graph import registry
+from backend.app.ingestion.nodes import registry
 from backend.app.ingestion.graph.schema import WorkflowSpec
 from backend.app.models import WorkflowTemplate
 

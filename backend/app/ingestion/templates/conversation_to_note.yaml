@@ -1,0 +1,28 @@
+key: conversation_to_note
+version: 1
+description: 将对话整理成笔记
+
+nodes:
+  - id: source
+    type: source
+    params:
+      source_type: internal
+
+  - id: writer
+    type: writer
+    params:
+      model: deepseek-chat
+      provider: deepseek
+
+  - id: sink
+    type: sink
+    params: {}
+
+edges:
+  - id: e1
+    source: source
+    target: writer
+
+  - id: e2
+    source: writer
+    target: sink

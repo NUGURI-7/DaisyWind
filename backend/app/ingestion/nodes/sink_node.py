@@ -10,7 +10,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from backend.app.ingestion.graph import registry
+from backend.app.ingestion.nodes import registry
 from backend.app.ingestion.nodes.base import NodeType, NodeContext
 from backend.app.models import Note
 
