@@ -33,17 +33,12 @@
             <ImageBlock v-else-if="block.type === 'image'" :block="block" />
           </template>
 
-          <ThreeSpinner
-            v-if="msg.status === 'streaming' || msg.uuid === chat.lastAssistantUuid"
-            :size="36"
-            :active="msg.status === 'streaming'"
-            class="mt-2"
-          />
-
+          <!-- 1. Error Message 放最上面 (如果有的话) -->
           <p v-if="msg.status === 'error'" class="text-destructive text-sm">
             {{ msg.errorMessage }}
           </p>
 
+          <!-- 2. MessageActions (Copy按钮) 放在紧接着文本的下方 -->
           <!-- 流式期间不显示，避免复制到半截 -->
           <MessageActions
             v-if="msg.status !== 'streaming'"
@@ -54,6 +49,14 @@
               isLastMessage(index) ? 'opacity-100' : 'opacity-0 group-hover/msg:opacity-100',
             ]"
           />
+
+          <!-- 3. Icon (ThreeSpinner) 放在最底部，并使用独立的 margin 和位置偏移打破包裹感 -->
+          <div
+            v-if="msg.status === 'streaming' || msg.uuid === chat.lastAssistantUuid"
+            class="mt-2 -ml-2.5"
+          >
+            <ThreeSpinner :size="36" :active="msg.status === 'streaming'" />
+          </div>
         </div>
       </div>
       <div ref="scrollAnchor" class="h-10 w-full shrink-0"></div>

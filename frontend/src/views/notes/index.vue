@@ -380,20 +380,31 @@ onBeforeUnmount(() => {
 <style>
 /* ── Milkdown / Crepe 主题覆盖 ── */
 .milkdown {
-  --crepe-color-background: #f4f3ee;
+  /* 让主背景变透明，透出外层的颜色 */
+  --crepe-color-background: transparent;
+
   --crepe-color-on-background: var(--foreground);
-  --crepe-color-surface: #ece9e3;
-  --crepe-color-surface-low: #e2dfd9;
+
+  /* 调整悬浮或次级块的背景，使用项目预设的柔和色 */
+  --crepe-color-surface: var(--muted);
+  --crepe-color-surface-low: var(--muted);
   --crepe-color-on-surface: var(--foreground);
-  --crepe-color-outline: var(--foreground);
+  --crepe-color-outline: var(--border);
   --crepe-color-primary: var(--primary);
-  --crepe-color-hover: #e2dfd9;
-  --crepe-color-selected: #d8d5cf;
+
+  /* 可以使用带有透明度的前景色或者 muted 颜色让 hover 更自然 */
+  --crepe-color-hover: var(--muted);
+  --crepe-color-selected: var(--muted);
+
   --crepe-font-default: ui-sans-serif, system-ui, sans-serif;
   --crepe-font-title: ui-sans-serif, system-ui, sans-serif;
+
   height: 100% !important;
   min-height: 100% !important;
-  background: #f4f3ee !important;
+
+  /* 关键点：背景彻底透明 */
+  background: transparent !important;
+
   border: none !important;
   box-shadow: none !important;
   padding: 0 !important;
