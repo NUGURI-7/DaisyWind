@@ -1,6 +1,6 @@
 <template>
   <div class="shrink-0 px-4 py-4 pb-8">
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-[820px] mx-auto">
       <div
         class="flex flex-col gap-2 rounded-2xl border border-border bg-background px-4 py-3 focus-within:border-ring transition-colors"
       >

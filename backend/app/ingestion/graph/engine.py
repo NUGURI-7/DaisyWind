@@ -32,7 +32,6 @@ class GraphEngine:
         self._snapshot: dict[str, Any] = run.graph_snapshot
         self._blackboard: dict[str,Any] = dict(run.blackboard or {})
         self._node_status: dict[str, str] = self._blackboard.pop("__node_status__", {})
-        self._seq: int = 0
 
         for node_spec in self._snapshot.get("nodes",[]):
             if node_spec["id"] not in self._node_status:
@@ -58,15 +57,24 @@ class GraphEngine:
         return ready
 
     async def _emit(self, event_type: str, actor: str, payload: dict[str, Any]) -> None:
-        """记录事件到 IngestionEvent 表。"""
-        self._seq += 1
-        await IngestionEvent.create(
-            run_id=self._run.id,
-            seq=self._seq,
-            actor=actor,
-            kind=event_type,
-            payload=payload
-        )
+        """记录事件到 IngestionEvent 表。seq 由 DB 原子自增保证唯一。"""
+        from tortoise.transactions import in_transaction
+
+        async with in_transaction() as conn:
+            rows = await conn.execute_query_dict(
+                "UPDATE ingestion_run SET last_event_seq = last_event_seq + 1 "
+                "WHERE id = $1 RETURNING last_event_seq",
+                [self._run.id],
+            )
+            seq = rows[0]["last_event_seq"]
+            await IngestionEvent.create(
+                run_id=self._run.id,
+                seq=seq,
+                actor=actor,
+                kind=event_type,
+                payload=payload,
+                using_db=conn
+            )
 
     async def persist(self):
         """ blackboard + node_status 持久化到 DB。"""
@@ -77,7 +85,6 @@ class GraphEngine:
 
     async def run_to_completion(self):
         """主循环：反复找 ready → 执行 → 更新状态，直到没有 ready 节点。"""
-        self._seq = await IngestionEvent.filter(run_id=self._run.id).count()
 
         self._run.status = "running"
         await self._run.save(update_fields=["status"])
@@ -118,11 +125,11 @@ class GraphEngine:
             cancel_token=asyncio.Event(),
             emit=self._emit,
         )
-
+        await self._emit("node_started", node_spec.id, {"type": node_spec.type})
         logger.info("执行节点 %s (type=%s)", node_spec.id, node_spec.type)
         patch = await node.run(ctx,params)
         logger.info("节点 %s 执行完成，patch keys: %s", node_spec.id, list(patch.keys()))
-
+        await self._emit("node_completed", node_spec.id, {"type": node_spec.type, "patch_keys": list(patch.keys())})
         return patch
 
 

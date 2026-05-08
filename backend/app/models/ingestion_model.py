@@ -55,6 +55,10 @@ class IngestionRun(BaseModel, UUIDModel, TimestampMixin):
         description="pending|running|awaiting_user|cancelling|cancelled|succeeded|failed",
     )
     blackboard = fields.JSONField(default=dict, description="运行时状态 + 节点状态 + 节点输出")
+    last_event_seq = fields.IntField(
+        default=0,
+        description='最后一条 event 的 seq；emit 时用 UPDATE ... RETURNING 原子自增，是 seq 的 single source of truth',
+    )
     budget_tokens = fields.IntField(null=True, description="token 预算上限，null = 无限制")
     budget_cost_usd = fields.DecimalField(
         max_digits=10,
