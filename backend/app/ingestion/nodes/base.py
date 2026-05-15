@@ -12,6 +12,8 @@ from typing import Callable, Any, Awaitable, ClassVar
 
 from pydantic import BaseModel
 
+from backend.app.ingestion.schemas import Blackboard
+
 EmitFn = Callable[[str,str, dict[str,Any]], Awaitable[None]]
 
 
@@ -20,7 +22,7 @@ class NodeContext:
     """引擎在调度节点前构造并传入的运行时上下文。"""
     run_id: int
     user_id: int
-    blackboard: dict[str, Any]
+    blackboard: Blackboard
     cancel_token: asyncio.Event
     emit: EmitFn
 

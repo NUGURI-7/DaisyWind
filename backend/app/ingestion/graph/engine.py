@@ -13,6 +13,7 @@ from typing import Any
 from backend.app.ingestion.nodes import registry
 from backend.app.ingestion.graph.schema import NodeSpec
 from backend.app.ingestion.nodes.base import NodeContext
+from backend.app.ingestion.schemas import Blackboard
 from backend.app.models.ingestion_model import IngestionRun, IngestionEvent
 
 
@@ -30,8 +31,10 @@ class GraphEngine:
     def __init__(self, run: IngestionRun):
         self._run = run
         self._snapshot: dict[str, Any] = run.graph_snapshot
-        self._blackboard: dict[str,Any] = dict(run.blackboard or {})
-        self._node_status: dict[str, str] = self._blackboard.pop("__node_status__", {})
+        raw = dict(run.blackboard or {})
+        node_status = raw.pop("__node_status__",{})
+        self._blackboard = Blackboard.model_validate(raw)
+        self._node_status: dict[str,str] = node_status
 
         for node_spec in self._snapshot.get("nodes",[]):
             if node_spec["id"] not in self._node_status:
@@ -78,7 +81,7 @@ class GraphEngine:
 
     async def persist(self):
         """ blackboard + node_status 持久化到 DB。"""
-        snapshot = dict(self._blackboard)
+        snapshot = self._blackboard.model_dump()
         snapshot["__node_status__"] = self._node_status
         self._run.blackboard = snapshot
         await self._run.save(update_fields=["blackboard", "status", "updated_at"])
@@ -100,7 +103,7 @@ class GraphEngine:
 
                 try:
                     patch = await self.execute_node(node_spec)
-                    self._blackboard.update(patch)
+                    self._blackboard = self._blackboard.model_copy(update=patch)
                     self._node_status[node_spec.id] = DONE
                 except Exception as e:
                     self._node_status[node_spec.id] = FAILED

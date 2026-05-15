@@ -21,3 +21,21 @@ class RawConversation(BaseModel):
     messages: list[Message] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
+
+class Blackboard(BaseModel):
+    """Ingestion 工作流黑板，所有节点间共享的类型化状态。"""
+    # API 层写入（初始输入）
+    source_type: str
+    source_ref: str
+    source_input: str | None = None
+    paste_format: str | None = None
+
+    # source_node 输出
+    raw_conversation: dict[str, Any] | None = None
+
+    # writer_node 输出
+    draft: str | None = None
+    outline: dict[str, Any] | None = None
+
+    # sink_node 输出
+    note_uuid: str | None = None

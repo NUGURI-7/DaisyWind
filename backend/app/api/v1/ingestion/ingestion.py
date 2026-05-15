@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from backend.app.core.depends import get_current_user
 from backend.app.core.response import success, error
+from backend.app.ingestion.schemas import Blackboard
 from backend.app.models import User
 from backend.app.models.ingestion_model import WorkflowTemplate, IngestionRun
 from backend.app.ingestion.graph.engine import GraphEngine
@@ -29,22 +30,21 @@ async def run_ingestion(
         source_type=request.source_type,
         source_ref=request.source_ref,
         graph_snapshot=template.definition,
-        blackboard={
-            "source_input": request.source_input,
-            "source_type": request.source_type,
-            "source_ref": request.source_ref,
-            "paste_format": request.paste_format,
-            "__node_status__": {},
-        }
+        blackboard=Blackboard(
+            source_type=request.source_type,
+            source_ref=request.source_ref,
+            source_input=request.source_input,
+            paste_format=request.paste_format,
+        ).model_dump()
     )
 
     engine = GraphEngine(run)
     await engine.run_to_completion()
-
+    result = Blackboard.model_validate(run.blackboard)
     return success(data={
         "run_uuid": str(run.uuid),
         "status": run.status,
-        "note_uuid": run.blackboard.get("note_uuid"),
-        "draft": run.blackboard.get("draft", ""),
-        "outline": run.blackboard.get("outline"),  # {"title": "...", "tags": [...], "summary": "..."}
+        "note_uuid": result.note_uuid,
+        "draft": result.draft or "",
+        "outline": result.outline,  # {"title": "...", "tags": [...], "summary": "..."}
     })

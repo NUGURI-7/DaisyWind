@@ -57,7 +57,7 @@ class WriterNode(NodeType):
         provider: str = "deepseek"
 
     async def run(self, ctx: NodeContext, params: BaseModel) -> dict[str, Any]:
-        raw_data = ctx.blackboard.get("raw_conversation")
+        raw_data = ctx.blackboard.raw_conversation
         if not raw_data:
             raise ValueError("blackboard 中缺少 raw_conversation")
 

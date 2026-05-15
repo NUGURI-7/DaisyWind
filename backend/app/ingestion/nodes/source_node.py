@@ -27,7 +27,7 @@ class SourceNode(NodeType):
         paste_format: str = "generic"  # "generic" | "json"
 
     async def run(self, ctx: NodeContext, params: BaseModel) -> dict[str, Any]:
-        source_type = ctx.blackboard.get("source_type", params.source_type)
+        source_type = ctx.blackboard.source_type or params.source_type
 
 
         if source_type == "internal":
@@ -41,7 +41,7 @@ class SourceNode(NodeType):
 
 
     async def _handle_internal(self,ctx: NodeContext) -> dict[str,Any]:
-        conversation_id = ctx.blackboard.get("source_ref")
+        conversation_id = ctx.blackboard.source_ref
         if not isinstance(conversation_id, str) or not conversation_id.strip():
             raise ValueError("internal 模式下 blackboard 需要提供 source_ref（conversation uuid）")
 
@@ -78,13 +78,13 @@ class SourceNode(NodeType):
         return {"raw_conversation": raw.model_dump()}
 
     async def _handle_link(self,ctx: NodeContext) -> dict[str,Any]:
-        source_input = ctx.blackboard.get("source_input")
+        source_input = ctx.blackboard.source_input
         if not isinstance(source_input, str) or not source_input.strip():
             raise ValueError("link 模式下 source_input 必须是非空 JSON 字符串")
         return self._parse_share_json(source_input)
 
     async def _handle_pasted(self, ctx: NodeContext, paste_format: str) -> dict[str, Any]:
-        source_input = ctx.blackboard.get("source_input")
+        source_input = ctx.blackboard.source_input
 
         if not isinstance(source_input,str) or not source_input.strip():
             raise ValueError("pasted 模式下 source_input 必须是非空字符串")

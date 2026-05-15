@@ -33,8 +33,8 @@ class SinkNode(NodeType):
 
 
     async def run(self, ctx: NodeContext, params: BaseModel) -> dict[str, Any]:
-        draft: str = ctx.blackboard.get("draft","")
-        outline: dict[str, Any] = ctx.blackboard.get("outline") or {}
+        draft = ctx.blackboard.draft or ""
+        outline = ctx.blackboard.outline or {}
         title: str = outline.get("title") or "Untitled"
         preview: str = draft[:100]
 
